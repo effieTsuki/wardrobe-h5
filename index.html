@@ -469,7 +469,7 @@
     const path = owner + '/' + (crypto.randomUUID ? crypto.randomUUID() : Date.now()) + '.jpg';
     const res = await fetch(URL_BASE + '/storage/v1/object/clothes/' + path, {
       method: 'POST',
-      headers: authHeaders({ 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }),
+      headers: authHeaders({ 'Content-Type': 'image/jpeg' }),
       body: blob
     });
     if (!res.ok) throw new Error('图片上传失败 ' + res.status);
