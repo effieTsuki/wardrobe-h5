@@ -27,6 +27,15 @@ create index if not exists clothes_price_idx    on public.clothes (owner, price)
 -- 给匿名角色授予读写权限（个人试用；前端用 owner 字段做逻辑隔离）
 grant select, insert, update, delete on public.clothes to anon;
 
+-- 行级安全（RLS）：若表已启用 RLS（Table Editor 常引导开启），需建放行策略
+drop policy if exists "clothes_public_all" on public.clothes;
+create policy "clothes_public_all"
+  on public.clothes
+  for all
+  to anon
+  using (true)
+  with check (true);
+
 -- ============================================================
 -- 2. 图片存储桶（public：图片公开可访问）
 -- ============================================================
