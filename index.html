@@ -3,24 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#c97b5a">
 <title>我的衣橱</title>
 <script src="config.js"></script>
 <style>
   :root {
-    --primary: #2563eb;
-    --primary-bright: #3b82f6;
-    --primary-soft: #dbeafe;
-    --primary-deep: #1d4ed8;
-    --bg: #f2f5fd;
-    --card: #ffffff;
-    --text: #1f2937;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --danger: #ef4444;
-    --shadow: 0 1px 3px rgba(16,24,40,.05), 0 10px 28px rgba(16,24,40,.08);
-    --shadow-lg: 0 12px 40px rgba(16,24,40,.18);
-    --grad: linear-gradient(135deg, #3b82f6, #2563eb 55%, #1d4ed8);
+    --primary: #c97b5a;
+    --primary-bright: #e8a87c;
+    --primary-deep: #a9603c;
+    --primary-soft: #f7e8dd;
+    --bg: #faf5ee;
+    --card: #fffdf9;
+    --text: #43302b;
+    --muted: #8a7365;
+    --border: #eee3d6;
+    --danger: #dc2626;
+    --shadow: 0 2px 6px rgba(93,64,45,.05), 0 10px 26px rgba(93,64,45,.09);
+    --shadow-lg: 0 12px 40px rgba(60,40,25,.20);
+    --grad: linear-gradient(135deg, #e8a87c, #c97b5a 55%, #a9603c);
+    --warm-gray: #f6efe6;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,9 +30,9 @@
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
     background: var(--bg);
     background-image:
-      radial-gradient(ellipse 90% 55% at 8% -8%, rgba(59,130,246,.11), transparent 60%),
-      radial-gradient(ellipse 65% 45% at 96% 4%, rgba(139,92,246,.09), transparent 60%),
-      radial-gradient(ellipse 85% 50% at 50% 108%, rgba(14,165,233,.08), transparent 60%);
+      radial-gradient(ellipse 90% 55% at 8% -8%, rgba(232,168,124,.16), transparent 60%),
+      radial-gradient(ellipse 65% 45% at 96% 4%, rgba(224,148,167,.12), transparent 60%),
+      radial-gradient(ellipse 85% 50% at 50% 108%, rgba(201,123,90,.09), transparent 60%);
     background-attachment: fixed;
     color: var(--text);
     font-size: 15px;
@@ -46,9 +47,9 @@
   /* ================= 顶栏 ================= */
   .header {
     position: sticky; top: 0; z-index: 20;
-    background: rgba(255,255,255,.78);
+    background: rgba(255,253,249,.8);
     backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    border-bottom: 1px solid rgba(229,233,243,.9);
+    border-bottom: 1px solid rgba(238,227,214,.9);
     padding: 14px 16px 14px;
     padding-top: calc(14px + env(safe-area-inset-top, 0px));
   }
@@ -56,37 +57,37 @@
   .brand { display: flex; align-items: center; gap: 10px; }
   .brand .logo {
     width: 38px; height: 38px; border-radius: 12px;
-    background: linear-gradient(135deg, #60a5fa, #2563eb 55%, #4f46e5);
+    background: linear-gradient(135deg, #e8a87c, #c97b5a 55%, #8f4d33);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 6px 16px rgba(37,99,235,.35);
+    box-shadow: 0 6px 16px rgba(201,123,90,.35);
   }
   .brand .logo svg { width: 22px; height: 22px; stroke: #fff; }
   .brand h1 {
     margin: 0; font-size: 20px; font-weight: 800; letter-spacing: .3px;
-    background: linear-gradient(120deg, #1e3a8a, #2563eb 45%, #0ea5e9);
+    background: linear-gradient(120deg, #7c4a2d, #c97b5a 45%, #e8a87c);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .brand .sub { font-size: 11px; color: var(--muted); margin-top: -2px; }
+  .brand .sub { font-size: 11px; color: var(--muted); margin-top: -2px; letter-spacing: .5px; }
 
   /* 统计卡片 */
   .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 11px; margin-top: 14px; }
   .stat {
     display: flex; align-items: center; gap: 9px;
-    background: rgba(255,255,255,.8);
+    background: rgba(255,253,249,.85);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border: 1px solid #e6eaf4; border-radius: 16px;
+    border: 1px solid #f0e5d8; border-radius: 16px;
     padding: 11px 12px;
-    box-shadow: 0 3px 14px rgba(16,24,40,.06);
+    box-shadow: 0 3px 14px rgba(93,64,45,.06);
   }
   .stat .s-icon {
     flex: 0 0 auto; width: 33px; height: 33px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    background: #eef4ff;
+    background: #f9efe4;
   }
   .stat .s-icon svg { width: 17px; height: 17px; }
-  .s-icon.i-count svg { stroke: var(--primary); }
-  .s-icon.i-total svg { stroke: #059669; }
-  .s-icon.i-avg svg { stroke: #7c3aed; }
+  .s-icon.i-count svg { stroke: #c97b5a; }
+  .s-icon.i-total svg { stroke: #6b8f5e; }
+  .s-icon.i-avg svg { stroke: #b06a75; }
   .stat .s-txt { display: flex; flex-direction: column; min-width: 0; }
   .stat .num { font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.15; letter-spacing: -.3px; }
   .stat .lbl { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
@@ -101,14 +102,14 @@
   .cats::-webkit-scrollbar { display: none; }
   .chip {
     flex: 0 0 auto; padding: 9px 17px; border-radius: 999px;
-    background: rgba(255,255,255,.92); border: 1px solid var(--border);
+    background: rgba(255,253,249,.95); border: 1px solid var(--border);
     color: var(--muted); font-size: 13.5px; white-space: nowrap; font-weight: 500;
     line-height: 1.35; transition: all .18s ease;
   }
   .chip:active { transform: scale(.95); }
   .chip.on {
     background: var(--grad); border-color: transparent; color: #fff; font-weight: 700;
-    box-shadow: 0 5px 16px rgba(37,99,235,.35);
+    box-shadow: 0 5px 16px rgba(201,123,90,.35);
   }
 
   /* ================= 工具栏 ================= */
@@ -118,18 +119,18 @@
   .tag {
     flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
     padding: 5px 12px; border-radius: 999px; font-size: 12.5px;
-    background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b;
+    background: #faf3ec; border: 1px solid #eadfd2; color: #9a8675;
     transition: all .15s ease;
   }
   .tag:active { transform: scale(.93); }
   .tag.on {
-    background: #eef4ff; border-color: #bfd7fe; color: var(--primary-deep); font-weight: 700;
+    background: #fdf0e5; border-color: #edc9ab; color: var(--primary-deep); font-weight: 700;
   }
   .btn-sort {
     flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
-    padding: 7px 13px; border-radius: 999px; background: rgba(255,255,255,.85);
+    padding: 7px 13px; border-radius: 999px; background: rgba(255,253,249,.9);
     border: 1px solid var(--border); font-size: 13px; color: var(--text); font-weight: 600;
-    box-shadow: 0 2px 8px rgba(16,24,40,.04);
+    box-shadow: 0 2px 8px rgba(93,64,45,.05);
   }
   .btn-sort:active { transform: scale(.95); }
   .btn-sort svg { width: 14px; height: 14px; stroke: var(--primary); }
@@ -138,17 +139,17 @@
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; padding: 10px 16px 24px; }
   .card {
     background: var(--card); border-radius: 20px; overflow: hidden;
-    box-shadow: 0 2px 6px rgba(16,24,40,.04), 0 10px 26px rgba(16,24,40,.08);
-    border: 1px solid rgba(226,232,240,.8);
+    box-shadow: 0 2px 6px rgba(93,64,45,.04), 0 10px 26px rgba(93,64,45,.08);
+    border: 1px solid rgba(240,229,216,.85);
     display: flex; flex-direction: column;
     animation: cardIn .45s cubic-bezier(.2,.8,.25,1) backwards;
     transition: transform .18s ease, box-shadow .18s ease;
   }
-  .card:active { transform: scale(.97); box-shadow: 0 4px 14px rgba(16,24,40,.10); }
+  .card:active { transform: scale(.97); box-shadow: 0 4px 14px rgba(93,64,45,.12); }
   @keyframes cardIn { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
   .card .thumb {
     position: relative; aspect-ratio: 1/1;
-    background: linear-gradient(140deg, #e8f0fe 0%, #f4f7fd 45%, #f0eefd 100%);
+    background: linear-gradient(140deg, #f7ead9 0%, #faf5ec 45%, #f5e8e2 100%);
     display: flex; align-items: center; justify-content: center; overflow: hidden;
   }
   .card .thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -158,16 +159,16 @@
     display: inline-flex; align-items: center; gap: 5px;
     padding: 4px 10px; border-radius: 999px;
     font-size: 11px; font-weight: 700;
-    background: rgba(255,255,255,.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-    color: #334155; box-shadow: 0 2px 8px rgba(16,24,40,.10);
+    background: rgba(255,253,249,.85); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    color: #6b5446; box-shadow: 0 2px 8px rgba(93,64,45,.12);
   }
   .card .cat-badge::before {
     content: ''; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--cc, #64748b);
+    background: var(--cc, #a9866f);
   }
   .card .del {
     position: absolute; top: 8px; right: 8px; width: 27px; height: 27px;
-    border-radius: 50%; background: rgba(17,24,39,.42);
+    border-radius: 50%; background: rgba(67,48,43,.42);
     backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     display: flex; align-items: center; justify-content: center;
     opacity: 0; transition: opacity .15s ease;
@@ -184,18 +185,18 @@
   .gpill, .spill {
     font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; line-height: 1.5;
   }
-  .gpill { background: #f1f5f9; color: #475569; }
+  .gpill { background: #f6efe6; color: #6f5b4c; }
   .card .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 9px; }
   .price-badge {
     display: inline-flex; align-items: baseline; gap: 1px;
     padding: 4px 11px; border-radius: 999px;
     background: var(--grad); color: #fff;
     font-size: 13.5px; font-weight: 800; letter-spacing: .2px;
-    box-shadow: 0 4px 12px rgba(37,99,235,.32);
+    box-shadow: 0 4px 12px rgba(201,123,90,.32);
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .price-badge small { font-size: 10px; font-weight: 600; opacity: .85; margin-right: 1px; }
-  .age-pill { font-size: 11px; color: #475569; background: #eef2f7; padding: 3px 8px; border-radius: 999px; font-weight: 500; }
+  .age-pill { font-size: 11px; color: #7d6a58; background: #f4ece1; padding: 3px 8px; border-radius: 999px; font-weight: 500; }
 
   /* ================= 空态 ================= */
   .empty { grid-column: 1 / -1; text-align: center; padding: 42px 20px 60px; }
@@ -203,8 +204,8 @@
     width: 118px; height: 118px; margin: 0 auto 18px; border-radius: 36px;
     background:
       radial-gradient(circle at 30% 25%, rgba(255,255,255,.85), transparent 55%),
-      linear-gradient(140deg, #c9d9f8, #ded7fb 60%, #c2f0fb);
-    box-shadow: 0 18px 44px rgba(59,130,246,.22), inset 0 0 0 1px rgba(255,255,255,.5);
+      linear-gradient(140deg, #f3ddc4, #f7d9c8 60%, #fce6d0);
+    box-shadow: 0 18px 44px rgba(201,123,90,.22), inset 0 0 0 1px rgba(255,255,255,.5);
     display: flex; align-items: center; justify-content: center;
     animation: floaty 3.2s ease-in-out infinite;
   }
@@ -215,7 +216,7 @@
   .empty-btn {
     margin-top: 18px; padding: 11px 26px; border-radius: 999px;
     background: var(--grad); color: #fff; font-size: 14.5px; font-weight: 700;
-    box-shadow: 0 8px 22px rgba(37,99,235,.35);
+    box-shadow: 0 8px 22px rgba(201,123,90,.35);
     display: inline-flex; align-items: center; gap: 5px;
     transition: transform .15s ease;
   }
@@ -227,14 +228,14 @@
     width: 58px; height: 58px; border-radius: 50%;
     background: var(--grad);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 22px rgba(37,99,235,.4);
+    box-shadow: 0 8px 22px rgba(201,123,90,.4);
     transition: transform .15s ease;
   }
   .fab:active { transform: scale(.9); }
   .fab svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 2.6; position: relative; z-index: 1; }
   .fab::before {
     content: ''; position: absolute; inset: -4px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(59,130,246,.30), transparent 65%);
+    background: radial-gradient(circle, rgba(232,168,124,.32), transparent 65%);
     animation: fabGlow 2.6s ease-in-out infinite; z-index: 0;
   }
   @keyframes fabGlow { 0%,100% { opacity: .45; transform: scale(1) } 50% { opacity: 1; transform: scale(1.18) } }
@@ -242,29 +243,29 @@
   /* ================= 底栏 ================= */
   .tabbar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
-    background: rgba(255,255,255,.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid rgba(229,233,243,.9); padding-bottom: var(--safe-bottom);
+    background: rgba(255,253,249,.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(238,227,214,.9); padding-bottom: var(--safe-bottom);
     display: flex; align-items: center; justify-content: center; gap: 8px; height: 60px;
   }
-  .tabbar .hint { font-size: 12.5px; color: #5a6474; letter-spacing: .5px; }
+  .tabbar .hint { font-size: 12.5px; color: #8a7566; letter-spacing: .5px; }
 
   /* ================= 弹窗 ================= */
   .mask {
-    position: fixed; inset: 0; z-index: 40; background: rgba(15,23,42,.45);
+    position: fixed; inset: 0; z-index: 40; background: rgba(60,40,25,.45);
     backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .22s ease;
   }
   .mask.show { opacity: 1; pointer-events: auto; }
   .sheet {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
-    background: rgba(255,255,255,.94);
+    background: rgba(255,252,247,.95);
     backdrop-filter: blur(26px) saturate(1.5); -webkit-backdrop-filter: blur(26px) saturate(1.5);
     border-radius: 26px 26px 0 0; max-height: 92vh; overflow-y: auto;
-    box-shadow: 0 -12px 44px rgba(16,24,40,.16);
+    box-shadow: 0 -12px 44px rgba(60,40,25,.16);
     transform: translateY(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
     padding-bottom: calc(22px + var(--safe-bottom));
   }
   .sheet.show { transform: translateY(0); }
-  .sheet .grip { width: 42px; height: 4.5px; border-radius: 3px; background: #d3dae6; margin: 11px auto 4px; }
+  .sheet .grip { width: 42px; height: 4.5px; border-radius: 3px; background: #e3d5c6; margin: 11px auto 4px; }
   .sheet h2 { margin: 10px 22px 4px; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 7px; }
   .sheet h2::before {
     content: ''; width: 5px; height: 18px; border-radius: 3px; background: var(--grad);
@@ -273,15 +274,37 @@
   .sheet .form { padding: 8px 22px 0; }
   .field { margin-bottom: 15px; }
   .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 7px; font-weight: 600; }
-  .field input[type=text], .field input[type=number], .field input[type=date], .field textarea {
+  .field input[type=text], .field input[type=number], .field textarea {
     width: 100%; padding: 12px 14px; border-radius: 13px; border: 1.5px solid var(--border);
     background: #fff; outline: none; transition: border .15s ease, box-shadow .15s ease;
   }
   .field input:focus, .field textarea:focus {
     border-color: var(--primary-bright);
-    box-shadow: 0 0 0 4px rgba(59,130,246,.12);
+    box-shadow: 0 0 0 4px rgba(232,168,124,.16);
   }
   .field textarea { resize: none; min-height: 64px; }
+
+  /* 日期选择字段（点击弹自定义日历） */
+  .date-field {
+    display: flex; align-items: center; gap: 9px;
+    padding: 12px 14px; border-radius: 13px; border: 1.5px solid var(--border);
+    background: #fff; cursor: pointer;
+    transition: border .15s ease, box-shadow .15s ease;
+  }
+  .date-field:active { border-color: var(--primary-bright); }
+  .date-field svg { width: 17px; height: 17px; stroke: var(--primary); flex: 0 0 auto; }
+  .date-field input {
+    flex: 1; border: none; outline: none; background: transparent; padding: 0;
+    pointer-events: none; cursor: pointer; font-size: 14.5px; color: var(--text);
+  }
+  .date-field input::placeholder { color: #b8a696; }
+  .date-field .clear-btn {
+    display: none; width: 18px; height: 18px; border-radius: 50%;
+    background: #efe4d7; color: #8a7365; font-size: 11px; line-height: 1;
+    align-items: center; justify-content: center; flex: 0 0 auto;
+  }
+  .date-field.has-value .clear-btn { display: flex; }
+
   .seg { display: flex; flex-wrap: wrap; gap: 8px; }
   .seg .opt {
     padding: 8px 15px; border-radius: 999px; background: #fff; border: 1.5px solid var(--border);
@@ -290,7 +313,7 @@
   .seg .opt:active { transform: scale(.93); }
   .seg .opt.on {
     background: var(--grad); border-color: transparent; color: #fff; font-weight: 700;
-    box-shadow: 0 4px 14px rgba(37,99,235,.3);
+    box-shadow: 0 4px 14px rgba(201,123,90,.3);
   }
   .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
   .swatch {
@@ -309,14 +332,14 @@
   /* 上传框 */
   .upload { display: flex; align-items: center; gap: 13px; }
   .upload .box {
-    width: 84px; height: 84px; border-radius: 16px; border: 1.5px dashed #b6c8e8;
-    background: linear-gradient(140deg, #f6f9ff, #f2f5fc);
+    width: 84px; height: 84px; border-radius: 16px; border: 1.5px dashed #d9bfa4;
+    background: linear-gradient(140deg, #fdf8f2, #faf3ea);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     color: var(--muted); font-size: 11px; gap: 4px; overflow: hidden; position: relative;
     transition: border .15s ease, transform .15s ease;
   }
   .upload .box:active { transform: scale(.95); border-color: var(--primary-bright); }
-  .upload .box svg { width: 22px; height: 22px; stroke: #7ba4f0; }
+  .upload .box svg { width: 22px; height: 22px; stroke: #d49a6f; }
   .upload .box img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .upload .box .rm {
     position: absolute; top: 4px; right: 4px; width: 19px; height: 19px; border-radius: 50%;
@@ -332,19 +355,19 @@
     text-align: center; transition: all .15s ease;
   }
   .btn:active { transform: scale(.97); }
-  .btn.ghost { background: #eef2f8; color: var(--muted); }
+  .btn.ghost { background: #f2ebe0; color: var(--muted); }
   .btn.primary {
     background: var(--grad); color: #fff;
-    box-shadow: 0 6px 20px rgba(37,99,235,.38);
+    box-shadow: 0 6px 20px rgba(201,123,90,.38);
   }
-  .btn.primary:active { box-shadow: 0 2px 10px rgba(37,99,235,.3); }
+  .btn.primary:active { box-shadow: 0 2px 10px rgba(201,123,90,.3); }
   .btn.primary:disabled { opacity: .55; box-shadow: none; }
   .btn.danger { background: linear-gradient(135deg, #f87171, #ef4444); color: #fff; box-shadow: 0 6px 18px rgba(239,68,68,.35); }
 
   /* 确认弹窗 */
   .dialog {
     position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(.92); z-index: 45;
-    background: rgba(255,255,255,.96); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+    background: rgba(255,252,247,.96); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
     border-radius: 22px; padding: 24px 22px 20px; width: 82%; max-width: 320px; text-align: center;
     box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: all .2s ease;
   }
@@ -352,14 +375,64 @@
   .dialog p { margin: 4px 0 18px; font-size: 15px; font-weight: 600; }
   .dialog .row { display: flex; gap: 11px; }
 
+  /* ================= 自定义日历弹层 ================= */
+  .cal-mask {
+    position: fixed; inset: 0; z-index: 50; background: rgba(60,40,25,.45);
+    backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .22s ease;
+  }
+  .cal-mask.show { opacity: 1; pointer-events: auto; }
+  .cal-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 51;
+    background: rgba(255,252,247,.97);
+    backdrop-filter: blur(26px) saturate(1.5); -webkit-backdrop-filter: blur(26px) saturate(1.5);
+    border-radius: 26px 26px 0 0;
+    box-shadow: 0 -12px 44px rgba(60,40,25,.18);
+    transform: translateY(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+    padding: 11px 20px calc(22px + var(--safe-bottom));
+  }
+  .cal-sheet.show { transform: translateY(0); }
+  .cal-sheet .grip { width: 42px; height: 4.5px; border-radius: 3px; background: #e3d5c6; margin: 0 auto 10px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cal-title { font-size: 16.5px; font-weight: 800; color: var(--text); letter-spacing: .5px; }
+  .cal-nav {
+    width: 36px; height: 36px; border-radius: 12px; background: var(--warm-gray);
+    font-size: 19px; color: var(--primary-deep); display: flex; align-items: center; justify-content: center;
+    transition: all .15s ease;
+  }
+  .cal-nav:active { transform: scale(.9); }
+  .cal-nav:disabled { opacity: .3; }
+  .cal-week {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px;
+  }
+  .cal-week span { text-align: center; font-size: 12px; color: var(--muted); font-weight: 600; padding: 4px 0; }
+  .cal-week .wend { color: #cf8f8f; }
+  .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-d {
+    aspect-ratio: 1/1; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14.5px; color: var(--text); font-weight: 500;
+    transition: all .12s ease; position: relative;
+  }
+  .cal-d:active { transform: scale(.88); }
+  .cal-d.today::after {
+    content: ''; position: absolute; inset: 2px; border-radius: 50%;
+    border: 1.5px solid #eab68b;
+  }
+  .cal-d.sel { background: var(--grad); color: #fff; font-weight: 800; box-shadow: 0 4px 12px rgba(201,123,90,.35); }
+  .cal-d.sel.today::after { border-color: rgba(255,255,255,.85); }
+  .cal-d:disabled { color: #e3d8cc; }
+  .cal-weekend { color: #b9776a; }
+  .cal-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .cal-actions .btn.today-btn { background: var(--warm-gray); color: var(--primary-deep); flex: 0 0 auto; padding: 13px 18px; }
+
   /* toast */
   .toast {
     position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 60;
-    background: rgba(17,24,39,.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    background: rgba(52,36,28,.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     color: #fff; padding: 13px 24px; border-radius: 14px;
     font-size: 14px; font-weight: 500;
     opacity: 0; pointer-events: none; transition: opacity .2s ease;
-    box-shadow: 0 12px 32px rgba(16,24,40,.3);
+    box-shadow: 0 12px 32px rgba(60,40,25,.3);
   }
   .toast.show { opacity: 1; }
 
@@ -381,7 +454,7 @@
         </span>
         <div>
           <h1>我的衣橱</h1>
-          <div class="sub">衣尽其用 · 心爱每件</div>
+          <div class="sub">温柔收纳 · 心爱每件</div>
         </div>
       </div>
     </div>
@@ -474,7 +547,11 @@
     </div>
     <div class="field">
       <label>购入时间</label>
-      <input type="date" id="f-date">
+      <div class="date-field" id="date-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+        <input type="text" id="f-date" readonly placeholder="点击选择日期">
+        <span class="clear-btn" id="date-clear">✕</span>
+      </div>
     </div>
     <div class="field">
       <label>备注</label>
@@ -484,6 +561,26 @@
   <div class="actions">
     <button class="btn ghost" id="btn-cancel">取消</button>
     <button class="btn primary" id="btn-save">保存</button>
+  </div>
+</div>
+
+<!-- 自定义日历弹层 -->
+<div class="cal-mask" id="cal-mask"></div>
+<div class="cal-sheet" id="cal-sheet">
+  <div class="grip"></div>
+  <div class="cal-head">
+    <button class="cal-nav" id="cal-prev">‹</button>
+    <div class="cal-title" id="cal-title"></div>
+    <button class="cal-nav" id="cal-next">›</button>
+  </div>
+  <div class="cal-week">
+    <span class="wend">日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span class="wend">六</span>
+  </div>
+  <div class="cal-days" id="cal-days"></div>
+  <div class="cal-actions">
+    <button class="btn today-btn" id="cal-today">今天</button>
+    <button class="btn ghost" id="cal-clear">清除</button>
+    <button class="btn primary" id="cal-ok">确定</button>
   </div>
 </div>
 
@@ -515,8 +612,8 @@
     '#eab308','#f97316','#ef4444','#ec4899','#8b5cf6','#92400e',
     '#f5e6d3','#065f46','#1e293b'
   ];
-  const CATEGORY_COLORS = { '上衣':'#3b82f6','下装':'#8b5cf6','连衣裙':'#ec4899','外套':'#f59e0b','鞋':'#10b981','配饰':'#06b6d4','其他':'#64748b' };
-  const SEASON_COLORS = { '春':'#22c55e','夏':'#eab308','秋':'#ea580c','冬':'#0ea5e9' };
+  const CATEGORY_COLORS = { '上衣':'#d98a5f','下装':'#a9824f','连衣裙':'#cf7f96','外套':'#b0724d','鞋':'#7d9463','配饰':'#c48d5a','其他':'#a9866f' };
+  const SEASON_COLORS = { '春':'#679b52','夏':'#e2a23b','秋':'#d97b29','冬':'#8ba7c4' };
 
   // ---------- 状态 ----------
   let owner = localStorage.getItem('wardrobe_owner');
@@ -538,6 +635,16 @@
   function toast(msg) {
     const t = $('#toast'); t.textContent = msg; t.classList.add('show');
     clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  function todayStr() {
+    const t = new Date();
+    return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+  }
+  function fmtDateCN(s) {
+    if (!s) return '';
+    const p = s.split('-');
+    return (+p[0]) + '年' + (+p[1]) + '月' + (+p[2]) + '日';
   }
 
   function timeSince(dateStr) {
@@ -640,7 +747,7 @@
 
   // ---------- 渲染 ----------
   const catIcon = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="width:40px;height:40px"><path d="M12 3l3 4M12 3L9 7M12 3v3M5 10h14M8 10v3a4 4 0 0 0 8 0v-3"/></svg>';
-  const emptyArtSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="url(#eg)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><path d="M12 3l3 4M12 3L9 7M12 3v3M5 10h14M8 10v3a4 4 0 0 0 8 0v-3"/><path d="M12 13v3M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>';
+  const emptyArtSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="url(#eg)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c97b5a"/><stop offset="1" stop-color="#b06a75"/></linearGradient></defs><path d="M12 3l3 4M12 3L9 7M12 3v3M5 10h14M8 10v3a4 4 0 0 0 8 0v-3"/><path d="M12 13v3M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>';
 
   function renderCats() {
     const el = $('#cats'); el.innerHTML = '';
@@ -709,9 +816,9 @@
       const swatch = color ? '<span class="cdot" style="background:' + esc(color) + (color.toLowerCase() === '#f8fafc' ? ';border-color:#cbd5e1' : '') + '"></span>' : '';
       const img = c.image_url ? '<img src="' + esc(c.image_url) + '" loading="lazy" alt="">' : catIcon.replace('style="width:40px;height:40px"', 'style="width:40px;height:40px" class="ph"');
       const price = Number(c.price) || 0;
-      const catColor = CATEGORY_COLORS[c.category] || '#64748b';
+      const catColor = CATEGORY_COLORS[c.category] || '#a9866f';
       const seasonPills = (c.seasons || []).map(s => {
-        const sc = SEASON_COLORS[s] || '#64748b';
+        const sc = SEASON_COLORS[s] || '#a9866f';
         return '<span class="spill" style="background:' + mixWhite(sc, .16) + ';color:' + sc + '">' + esc(s) + '</span>';
       }).join('');
       return '<div class="card" style="animation-delay:' + Math.min(i * 45, 400) + 'ms" data-id="' + esc(c.id) + '">' +
@@ -754,13 +861,16 @@
 
   // ---------- 表单 ----------
   function openSheet() {
-    $('#sheet').classList.add('show');
+    const sheet = $('#sheet');
+    sheet.scrollTop = 0;   // 每次打开回到顶部
+    sheet.classList.add('show');
     $('#mask').classList.add('show');
   }
   function closeSheet() {
     $('#sheet').classList.remove('show');
     $('#mask').classList.remove('show');
     state.editingId = null; state.pendingImage = null;
+    closeCalendar();
   }
 
   function buildSeg(elId, items, getCurrent, setCurrent) {
@@ -778,6 +888,7 @@
   let formSeasons = [];
   let formCat = CATEGORIES[0];
   let formGender = '中性';
+  let formDate = '';       // 'YYYY-MM-DD' 或 ''
 
   function renderColorPicker() {
     const el = $('#f-color'); el.innerHTML = '';
@@ -790,11 +901,18 @@
     });
   }
 
+  function renderDateField() {
+    const df = $('#date-field');
+    $('#f-date').value = formDate ? fmtDateCN(formDate) : '';
+    df.classList.toggle('has-value', !!formDate);
+  }
+
   function openAdd() {
     state.editingId = null; state.pendingImage = null;
     $('#sheet-title').textContent = '添加衣服';
-    $('#f-name').value = ''; $('#f-price').value = ''; $('#f-date').value = ''; $('#f-note').value = '';
-    formColor = ''; formSeasons = []; formCat = CATEGORIES[0]; formGender = '中性';
+    $('#f-name').value = ''; $('#f-price').value = ''; $('#f-note').value = '';
+    formColor = ''; formSeasons = []; formCat = CATEGORIES[0]; formGender = '中性'; formDate = '';
+    renderDateField();
     setPreview(null);
     buildSeg('f-cat', CATEGORIES, () => formCat, v => { formCat = v; });
     buildSeasons(); buildGender(); renderColorPicker();
@@ -827,12 +945,13 @@
     $('#sheet-title').textContent = '编辑衣服';
     $('#f-name').value = item.name || '';
     $('#f-price').value = item.price != null ? item.price : '';
-    $('#f-date').value = item.purchased_at || '';
     $('#f-note').value = item.note || '';
     formCat = item.category || CATEGORIES[0];
     formColor = item.color || '';
     formSeasons = Array.isArray(item.seasons) ? item.seasons : [];
     formGender = item.gender || '中性';
+    formDate = item.purchased_at || '';
+    renderDateField();
     setPreview(item.image_url || null);
     buildSeg('f-cat', CATEGORIES, () => formCat, v => { formCat = v; });
     buildSeasons(); buildGender(); renderColorPicker();
@@ -852,6 +971,77 @@
       box.appendChild(rm);
     }
   }
+
+  // ---------- 自定义日历 ----------
+  const CAL_MIN = { y: 2010, m: 1 };
+  let calYear = 0, calMonth = 1, tempDate = null;
+
+  function monthStr() { return calYear + '-' + String(calMonth).padStart(2, '0'); }
+  function isFutureMonth() {
+    const t = new Date();
+    return calYear > t.getFullYear() || (calYear === t.getFullYear() && calMonth > t.getMonth() + 1);
+  }
+
+  function openCalendar() {
+    const base = formDate || todayStr();
+    calYear = +base.slice(0, 4); calMonth = +base.slice(5, 7);
+    tempDate = formDate || null;
+    renderCalendar();
+    $('#cal-sheet').classList.add('show');
+    $('#cal-mask').classList.add('show');
+  }
+  function closeCalendar() {
+    $('#cal-sheet').classList.remove('show');
+    $('#cal-mask').classList.remove('show');
+  }
+
+  function renderCalendar() {
+    $('#cal-title').textContent = calYear + '年' + calMonth + '月';
+    $('#cal-prev').disabled = (calYear === CAL_MIN.y && calMonth === CAL_MIN.m);
+    $('#cal-next').disabled = isFutureMonth();
+
+    const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+    const today = todayStr();
+    let html = '';
+    for (let i = 0; i < firstDay; i++) html += '<span></span>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = calYear + '-' + String(calMonth).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      const weekend = (firstDay + d - 1) % 7 === 0 || (firstDay + d - 1) % 7 === 6;
+      const cls = 'cal-d' + (weekend ? ' cal-weekend' : '') + (ds === today ? ' today' : '') + (ds === tempDate ? ' sel' : '');
+      const future = ds > today ? ' disabled' : '';
+      html += '<button class="' + cls + '" data-d="' + ds + '"' + future + '>' + d + '</button>';
+    }
+    $('#cal-days').innerHTML = html;
+    $('#cal-days').querySelectorAll('.cal-d').forEach(b => {
+      b.onclick = () => { tempDate = b.dataset.d; renderCalendar(); };
+    });
+  }
+
+  $('#date-field').onclick = openCalendar;
+  $('#cal-mask').onclick = closeCalendar;
+  $('#cal-prev').onclick = () => {
+    if (calMonth === 1) { calYear--; calMonth = 12; } else { calMonth--; }
+    renderCalendar();
+  };
+  $('#cal-next').onclick = () => {
+    if (!isFutureMonth()) {
+      if (calMonth === 12) { calYear++; calMonth = 1; } else { calMonth++; }
+      renderCalendar();
+    }
+  };
+  $('#cal-today').onclick = () => {
+    const t = todayStr();
+    calYear = +t.slice(0, 4); calMonth = +t.slice(5, 7);
+    tempDate = t; renderCalendar();
+  };
+  $('#cal-clear').onclick = () => { tempDate = null; formDate = ''; renderDateField(); closeCalendar(); };
+  $('#cal-ok').onclick = () => {
+    if (tempDate) formDate = tempDate;
+    renderDateField();
+    closeCalendar();
+  };
+  $('#date-clear').onclick = (e) => { e.stopPropagation(); formDate = ''; tempDate = null; renderDateField(); };
 
   // ---------- 事件绑定 ----------
   $('#fab').onclick = openAdd;
@@ -890,7 +1080,7 @@
         seasons: formSeasons,
         gender: formGender,
         price: Number($('#f-price').value) || 0,
-        purchased_at: $('#f-date').value || null,
+        purchased_at: formDate || null,
         image_url: imageUrl,
         note: $('#f-note').value.trim() || null
       };
