@@ -14,6 +14,7 @@ create table if not exists public.clothes (
   gender       text not null default '中性',       -- 性别：男/女/中性
   price        numeric(12,2) not null default 0,  -- 金额（元）
   purchased_at date,                              -- 购入时间
+  platform     text,                              -- 购入平台：淘宝/京东/拼多多/唯品会/抖音商城/线下门店/其他
   image_url    text,                              -- 图片公开 URL
   note         text,                              -- 备注
   created_at   timestamptz not null default now()
@@ -23,6 +24,9 @@ create table if not exists public.clothes (
 create index if not exists clothes_owner_idx    on public.clothes (owner);
 create index if not exists clothes_category_idx on public.clothes (owner, category);
 create index if not exists clothes_price_idx    on public.clothes (owner, price);
+
+-- 已建过表的用户升级用：追加购入平台列（可重复执行）
+alter table public.clothes add column if not exists platform text;
 
 -- 给匿名角色授予读写权限（个人试用；前端用 owner 字段做逻辑隔离）
 grant select, insert, update, delete on public.clothes to anon;
