@@ -115,8 +115,8 @@
   /* ================= 工具栏 ================= */
   .toolbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; gap: 12px; }
   .toolbar .tags { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 18px), transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 18px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 30px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 30px), transparent 100%);
   }
   .toolbar .tags::-webkit-scrollbar { display: none; }
   .tag {
@@ -129,6 +129,13 @@
   .tag.on {
     background: #fdf0e5; border-color: #edc9ab; color: var(--primary-deep); font-weight: 700;
   }
+  .tag.reset {
+    border-style: dashed; color: #a08a7a; background: transparent;
+  }
+  .tag.reset.on {
+    border-style: solid; color: var(--primary-deep); background: #fdf0e5; border-color: #edc9ab;
+  }
+  .tag .sdot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto; }
   .btn-sort {
     flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
     padding: 7px 13px; border-radius: 999px; background: rgba(255,253,249,.9);
@@ -767,15 +774,21 @@
     const el = $('#tags'); el.innerHTML = '';
     ['全部', ...GENDERS].forEach(g => {
       const b = document.createElement('button');
-      b.className = 'tag' + (state.filter.gender === g ? ' on' : '');
+      b.className = 'tag' + (g === '全部' ? ' reset' : '') + (state.filter.gender === g ? ' on' : '');
       b.textContent = g === '全部' ? '性别不限' : g;
       b.onclick = () => { state.filter.gender = g; renderTags(); load(); };
       el.appendChild(b);
     });
     ['全部', ...SEASONS].forEach(s => {
       const b = document.createElement('button');
-      b.className = 'tag' + (state.filter.season === s ? ' on' : '');
+      b.className = 'tag' + (s === '全部' ? ' reset' : '') + (state.filter.season === s ? ' on' : '');
       b.textContent = s === '全部' ? '季节不限' : s;
+      if (SEASON_COLORS[s]) {
+        const d = document.createElement('span');
+        d.className = 'sdot';
+        d.style.background = SEASON_COLORS[s];
+        b.insertBefore(d, b.firstChild);
+      }
       b.onclick = () => { state.filter.season = s; renderTags(); load(); };
       el.appendChild(b);
     });
