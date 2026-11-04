@@ -1,0 +1,52 @@
+# 衣橱 H5 · 部署说明
+
+## 架构
+- **前端**：纯原生 HTML/CSS/JS，零依赖，托管在 GitHub Pages
+- **后端**：Supabase（PostgreSQL 存衣服数据 + Storage 存图片）
+- **数据隔离**：每台设备首次打开时生成一个 `owner` 标识（存 localStorage），只读写自己的数据
+
+## 部署四步
+
+### 第一步：注册 Supabase 并初始化数据库
+1. 打开 [supabase.com](https://supabase.com)，用 GitHub 账号登录（免费，免备案）
+2. 右上角 **New project** → 填项目名 → 设数据库密码 → 区域选 **Singapore（新加坡）** → Create
+3. 等项目初始化完成（约 1~2 分钟）
+4. 左侧 **SQL Editor** → New query → 把本目录 `supabase.sql` 内容**整段粘贴** → **Run**
+5. 左侧 **Project Settings → API**，复制两个值：
+   - **Project URL**（形如 `https://xxxx.supabase.co`）
+   - **anon public key**（一长串）
+
+### 第二步：填配置
+打开 `config.js`，把上一步两个值填进去（保留引号）。
+
+### 第三步：本地预览（可选）
+```bash
+cd "衣橱h5"
+python3 -m http.server 8080
+```
+浏览器打开 `http://localhost:8080`，或用手机连同一 Wi-Fi 访问 `http://你Mac的IP:8080`。
+
+### 第四步：部署到 GitHub Pages
+1. 在 GitHub 新建一个 **public** 仓库（公开仓库才能用免费 Pages）
+2. 把 `index.html`、`config.js` 推上去（`supabase.sql`、`README.md` 可选）
+3. 仓库 **Settings → Pages → Source 选 main 分支** → 保存
+4. 等 1~2 分钟，得到网址 `https://你的用户名.github.io/仓库名/`
+5. 手机浏览器打开该网址即可使用，数据云端同步、换设备也能看到
+
+> 说明：`anon public key` 是**公开密钥**，设计上就允许放在前端代码里；真正的 `service_role` secret key 千万不要放进任何前端文件。
+
+## 功能清单
+- 衣服录入 / 编辑 / 删除
+- 图片上传（前端 canvas 自动压缩，省流量省空间）
+- 分类筛选：上衣 / 下装 / 连衣裙 / 外套 / 鞋 / 配饰 / 其他
+- 颜色（色板）、季节（多选）、性别（男 / 女 / 中性）
+- 金额、购入时间，自动计算「已买多久」
+- 排序：按金额升/降、购入时间、录入时间
+- 统计：总件数、总金额、均价
+
+## 安全说明（重要）
+当前采用「逻辑隔离」：靠每台设备随机生成的 `owner` 标识区分数据，**适合个人试用**——你打开自己的网址看到自己的衣橱，别人打开看到他们自己的空衣橱。
+
+但数据在**数据库层面并未加密或强制隔离**：理论上拿到你项目 URL 的人可以通过 API 读取全部数据（衣服本身不算敏感，风险有限）。若将来要正式使用、彻底杜绝他人读取，建议升级为「匿名登录 + RLS 行级安全」，需要的话我可以再帮你配好。
+
+> AI生成

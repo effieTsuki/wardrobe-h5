@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<title>我的衣橱</title>
+<script src="config.js"></script>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-soft: #dbeafe;
+    --primary-deep: #1d4ed8;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --danger: #ef4444;
+    --shadow: 0 1px 2px rgba(16,24,40,.04), 0 2px 8px rgba(16,24,40,.06);
+    --shadow-lg: 0 12px 40px rgba(16,24,40,.18);
+    --radius: 14px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-bottom: calc(84px + var(--safe-bottom));
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; font-size: 15px; color: var(--text); }
+  img { display: block; }
+
+  /* 顶栏 */
+  .header {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(255,255,255,.82);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px 12px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 9px; }
+  .brand svg { width: 24px; height: 24px; stroke: var(--primary); }
+  .brand h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: .3px; }
+  .stats { display: flex; gap: 16px; margin-top: 10px; }
+  .stat { display: flex; flex-direction: column; }
+  .stat .num { font-size: 17px; font-weight: 700; color: var(--primary); }
+  .stat .lbl { font-size: 11px; color: var(--muted); }
+
+  /* 分类 chips */
+  .cats {
+    display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px 4px;
+    scrollbar-width: none; position: sticky; top: 0; z-index: 10;
+  }
+  .cats::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: 0 0 auto; padding: 7px 15px; border-radius: 999px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--muted); font-size: 13.5px; white-space: nowrap;
+    transition: all .16s ease;
+  }
+  .chip.on { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(37,99,235,.28); }
+
+  /* 工具栏：筛选 + 排序 */
+  .toolbar { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 4px; gap: 10px; }
+  .toolbar .tags { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; }
+  .toolbar .tags::-webkit-scrollbar { display: none; }
+  .tag {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 11px; border-radius: 999px; font-size: 12.5px;
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+  }
+  .tag.on { background: var(--primary-soft); border-color: #bfdbfe; color: var(--primary-deep); font-weight: 600; }
+  .tag .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .btn-sort {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 11px; border-radius: 999px; background: var(--card);
+    border: 1px solid var(--border); font-size: 13px; color: var(--text);
+  }
+  .btn-sort svg { width: 14px; height: 14px; stroke: var(--muted); }
+
+  /* 卡片网格 */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 16px 20px; }
+  .card {
+    background: var(--card); border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    animation: fade .25s ease;
+  }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .card .thumb {
+    position: relative; aspect-ratio: 1/1; background: linear-gradient(135deg,#eef2ff,#f8fafc);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .card .thumb .ph { stroke: #c7d2fe; }
+  .card .cat-badge {
+    position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 7px;
+    font-size: 11px; background: rgba(255,255,255,.85); backdrop-filter: blur(4px);
+    color: var(--primary-deep); font-weight: 600;
+  }
+  .card .del {
+    position: absolute; top: 6px; right: 6px; width: 26px; height: 26px;
+    border-radius: 50%; background: rgba(17,24,39,.45); display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .15s ease;
+  }
+  .card:active .del, .card:hover .del { opacity: 1; }
+  .card .del svg { width: 14px; height: 14px; stroke: #fff; }
+  .card .body { padding: 9px 11px 11px; }
+  .card .name { font-size: 14px; font-weight: 600; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; font-size: 11.5px; color: var(--muted); }
+  .card .meta .cdot { width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(0,0,0,.08); }
+  .card .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 7px; }
+  .card .price { font-size: 15px; font-weight: 700; color: var(--text); }
+  .card .price small { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .card .age { font-size: 11px; color: var(--muted); }
+
+  /* 空态 */
+  .empty { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty svg { width: 64px; height: 64px; stroke: #d1d5db; margin-bottom: 12px; }
+  .empty .t { font-size: 15px; font-weight: 600; color: var(--text); }
+  .empty .s { font-size: 13px; margin-top: 4px; }
+
+  /* 悬浮按钮 */
+  .fab {
+    position: fixed; right: 18px; bottom: calc(76px + var(--safe-bottom)); z-index: 30;
+    width: 56px; height: 56px; border-radius: 50%; background: var(--primary);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(37,99,235,.4); transition: transform .15s ease;
+  }
+  .fab:active { transform: scale(.92); }
+  .fab svg { width: 26px; height: 26px; stroke: #fff; }
+
+  /* 底部导航（当前单页，预留） */
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+    background: rgba(255,255,255,.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border); padding-bottom: var(--safe-bottom);
+    display: flex; align-items: center; justify-content: center; gap: 8px; height: 60px;
+  }
+  .tabbar .hint { font-size: 12px; color: var(--muted); }
+
+  /* 弹窗遮罩 + 底部抽屉 */
+  .mask {
+    position: fixed; inset: 0; z-index: 40; background: rgba(17,24,39,.45);
+    backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .22s ease;
+  }
+  .mask.show { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
+    background: rgba(255,255,255,.94); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-radius: 22px 22px 0 0; max-height: 92vh; overflow-y: auto;
+    transform: translateY(105%); transition: transform .26s cubic-bezier(.2,.8,.2,1);
+    padding-bottom: calc(20px + var(--safe-bottom));
+  }
+  .sheet.show { transform: translateY(0); }
+  .sheet .grip { width: 40px; height: 4px; border-radius: 2px; background: #d1d5db; margin: 10px auto 4px; }
+  .sheet h2 { margin: 8px 20px 4px; font-size: 17px; font-weight: 700; }
+  .sheet .form { padding: 6px 20px 0; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .field input[type=text], .field input[type=number], .field input[type=date], .field textarea {
+    width: 100%; padding: 11px 13px; border-radius: 11px; border: 1px solid var(--border);
+    background: #fff; outline: none; transition: border .15s ease;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--primary); }
+  .field textarea { resize: none; min-height: 64px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 8px; }
+  .seg .opt {
+    padding: 7px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--border);
+    font-size: 13px; color: var(--muted); transition: all .14s ease;
+  }
+  .seg .opt.on { background: var(--primary-soft); border-color: var(--primary); color: var(--primary-deep); font-weight: 600; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 9px; }
+  .swatch {
+    width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent;
+    position: relative; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+  }
+  .swatch.on { border-color: var(--primary); transform: scale(1.12); }
+  .swatch.checked::after {
+    content: ''; position: absolute; inset: 0; margin: auto; width: 12px; height: 12px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/cover no-repeat;
+  }
+  /* 图片上传 */
+  .upload { display: flex; align-items: center; gap: 12px; }
+  .upload .box {
+    width: 78px; height: 78px; border-radius: 13px; border: 1.5px dashed #cbd5e1;
+    background: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 11px; gap: 4px; overflow: hidden; position: relative;
+  }
+  .upload .box svg { width: 22px; height: 22px; stroke: #94a3b8; }
+  .upload .box img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .upload .box .rm { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,.5); color: #fff; font-size: 12px; line-height: 1; }
+  .upload .tip { font-size: 12px; color: var(--muted); }
+  .sheet .actions { display: flex; gap: 10px; padding: 8px 20px 0; }
+  .btn {
+    flex: 1; padding: 13px; border-radius: 13px; font-size: 15px; font-weight: 600;
+    text-align: center; transition: all .15s ease;
+  }
+  .btn.ghost { background: #f1f5f9; color: var(--muted); }
+  .btn.primary { background: var(--primary); color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,.3); }
+  .btn.primary:active { background: var(--primary-deep); }
+  .btn.primary:disabled { opacity: .5; box-shadow: none; }
+
+  /* 确认弹窗 */
+  .dialog {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(.9); z-index: 45;
+    background: rgba(255,255,255,.96); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-radius: 18px; padding: 22px 20px 18px; width: 82%; max-width: 320px; text-align: center;
+    box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: all .2s ease;
+  }
+  .dialog.show { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%) scale(1); }
+  .dialog p { margin: 4px 0 16px; font-size: 15px; }
+  .dialog .row { display: flex; gap: 10px; }
+  .dialog .btn.danger { background: var(--danger); color: #fff; }
+
+  /* toast */
+  .toast {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 60;
+    background: rgba(17,24,39,.82); color: #fff; padding: 12px 22px; border-radius: 12px;
+    font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .toast.show { opacity: 1; }
+
+  @media (min-width: 640px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+    .container { max-width: 640px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 顶栏 -->
+  <header class="header">
+    <div class="header-top">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l3 4M12 3L9 7M12 3v3M5 10h14M8 10v3a4 4 0 0 0 8 0v-3"/><path d="M12 13v3M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+        <h1>我的衣橱</h1>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="num" id="stat-count">0</span><span class="lbl">件衣服</span></div>
+      <div class="stat"><span class="num" id="stat-total">¥0</span><span class="lbl">总金额</span></div>
+      <div class="stat"><span class="num" id="stat-avg">¥0</span><span class="lbl">均价</span></div>
+    </div>
+  </header>
+
+  <!-- 分类 -->
+  <nav class="cats" id="cats"></nav>
+
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <div class="tags" id="tags"></div>
+    <button class="btn-sort" id="btn-sort">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+      <span id="sort-label">金额↓</span>
+    </button>
+  </div>
+
+  <!-- 网格 -->
+  <main class="grid" id="grid"></main>
+</div>
+
+<!-- 悬浮添加 -->
+<button class="fab" id="fab">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- 底部 -->
+<footer class="tabbar"><span class="hint">数据实时云端同步 · 多设备通用</span></footer>
+
+<!-- 添加/编辑 抽屉 -->
+<div class="mask" id="mask"></div>
+<div class="sheet" id="sheet">
+  <div class="grip"></div>
+  <h2 id="sheet-title">添加衣服</h2>
+  <div class="form">
+    <div class="field">
+      <label>图片</label>
+      <div class="upload">
+        <div class="box" id="upload-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-9 9"/></svg>
+          <span>拍照/相册</span>
+        </div>
+        <div class="tip">自动压缩，可点图片移除</div>
+      </div>
+      <input type="file" id="file-input" accept="image/*" hidden>
+    </div>
+    <div class="field">
+      <label>名称 <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="f-name" placeholder="例如：黑色羊毛大衣">
+    </div>
+    <div class="field">
+      <label>分类</label>
+      <div class="seg" id="f-cat"></div>
+    </div>
+    <div class="field">
+      <label>颜色</label>
+      <div class="swatches" id="f-color"></div>
+    </div>
+    <div class="field">
+      <label>季节（可多选）</label>
+      <div class="seg" id="f-seasons"></div>
+    </div>
+    <div class="field">
+      <label>性别</label>
+      <div class="seg" id="f-gender"></div>
+    </div>
+    <div class="field">
+      <label>金额（元）</label>
+      <input type="number" id="f-price" inputmode="decimal" step="0.01" min="0" placeholder="0.00">
+    </div>
+    <div class="field">
+      <label>购入时间</label>
+      <input type="date" id="f-date">
+    </div>
+    <div class="field">
+      <label>备注</label>
+      <textarea id="f-note" placeholder="品牌、尺码、材质、穿搭想法…"></textarea>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn ghost" id="btn-cancel">取消</button>
+    <button class="btn primary" id="btn-save">保存</button>
+  </div>
+</div>
+
+<!-- 删除确认 -->
+<div class="dialog" id="dialog">
+  <p id="dialog-text">确定删除这件衣服？</p>
+  <div class="row">
+    <button class="btn ghost" id="dialog-no">取消</button>
+    <button class="btn danger" id="dialog-yes">删除</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- 配置 ----------
+  const CFG = window.SUPABASE_CONFIG || {};
+  const URL_BASE = (CFG.url || '').replace(/\/$/, '');
+  const ANON_KEY = CFG.anonKey || '';
+
+  const CATEGORIES = ['上衣', '下装', '连衣裙', '外套', '鞋', '配饰', '其他'];
+  const SEASONS = ['春', '夏', '秋', '冬'];
+  const GENDERS = ['男', '女', '中性'];
+  const COLORS = [
+    '#111827','#f8fafc','#9ca3af','#1d4ed8','#0ea5e9','#10b981',
+    '#eab308','#f97316','#ef4444','#ec4899','#8b5cf6','#92400e',
+    '#f5e6d3','#065f46','#1e293b'
+  ];
+
+  // ---------- 状态 ----------
+  let owner = localStorage.getItem('wardrobe_owner');
+  if (!owner) { owner = (crypto.randomUUID ? crypto.randomUUID() : ('u-' + Date.now() + Math.random().toString(16).slice(2))); localStorage.setItem('wardrobe_owner', owner); }
+
+  const state = {
+    clothes: [],
+    filter: { category: '全部', gender: '全部', season: '全部' },
+    sort: { key: 'price', dir: 'desc' },
+    editingId: null,        // 编辑中的衣服 id
+    pendingImage: null      // 待上传的压缩图 blob
+  };
+
+  // ---------- 工具 ----------
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmtMoney = (n) => { n = Number(n) || 0; return '¥' + n.toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); };
+
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  function timeSince(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T00:00:00');
+    const now = new Date();
+    const days = Math.floor((now.getTime() - d.getTime()) / 86400000);
+    if (days < 0) return '未来日期';
+    if (days === 0) return '今天';
+    if (days < 30) return days + '天';
+    if (days < 365) { const m = Math.floor(days / 30); return m + '个月'; }
+    const y = Math.floor(days / 365); const m = Math.floor((days % 365) / 30);
+    return m > 0 ? y + '年' + m + '个月' : y + '年';
+  }
+
+  // ---------- API ----------
+  function authHeaders(extra) {
+    return Object.assign({ apikey: ANON_KEY, Authorization: 'Bearer ' + ANON_KEY }, extra || {});
+  }
+  function assertCfg() {
+    if (!URL_BASE || !ANON_KEY || ANON_KEY.indexOf('你的') >= 0) {
+      toast('请先在 config.js 填入 Supabase URL 和 anonKey');
+      throw new Error('config missing');
+    }
+  }
+
+  async function fetchClothes() {
+    assertCfg();
+    let url = URL_BASE + '/rest/v1/clothes?owner=eq.' + encodeURIComponent(owner) + '&select=*';
+    if (state.filter.category !== '全部') url += '&category=eq.' + encodeURIComponent(state.filter.category);
+    if (state.filter.gender !== '全部') url += '&gender=eq.' + encodeURIComponent(state.filter.gender);
+    if (state.filter.season !== '全部') url += '&seasons=cs.%7B' + encodeURIComponent(state.filter.season) + '%7D';
+    const col = state.sort.key === 'created_at' ? 'created_at' : (state.sort.key === 'purchased_at' ? 'purchased_at' : 'price');
+    url += '&order=' + col + '.' + state.sort.dir + '.nullslast';
+    const res = await fetch(url, { headers: authHeaders() });
+    if (!res.ok) throw new Error('查询失败 ' + res.status);
+    state.clothes = await res.json();
+  }
+
+  async function saveCloth(data) {
+    assertCfg();
+    if (state.editingId) {
+      const res = await fetch(URL_BASE + '/rest/v1/clothes?id=eq.' + state.editingId + '&owner=eq.' + encodeURIComponent(owner), {
+        method: 'PATCH', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error('保存失败 ' + res.status);
+    } else {
+      const res = await fetch(URL_BASE + '/rest/v1/clothes', {
+        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(Object.assign({ owner: owner }, data))
+      });
+      if (!res.ok) throw new Error('保存失败 ' + res.status);
+    }
+  }
+
+  async function removeCloth(id) {
+    assertCfg();
+    const res = await fetch(URL_BASE + '/rest/v1/clothes?id=eq.' + id + '&owner=eq.' + encodeURIComponent(owner), { method: 'DELETE', headers: authHeaders() });
+    if (!res.ok) throw new Error('删除失败 ' + res.status);
+  }
+
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const max = 900;
+        let w = img.naturalWidth, h = img.naturalHeight;
+        const ratio = Math.min(1, max / Math.max(w, h));
+        w = Math.round(w * ratio); h = Math.round(h * ratio);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error('压缩失败')), 'image/jpeg', 0.78);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('图片读取失败')); };
+      img.src = url;
+    });
+  }
+
+  async function uploadImage(blob) {
+    assertCfg();
+    const path = owner + '/' + (crypto.randomUUID ? crypto.randomUUID() : Date.now()) + '.jpg';
+    const res = await fetch(URL_BASE + '/storage/v1/object/clothes/' + path, {
+      method: 'POST',
+      headers: authHeaders({ 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }),
+      body: blob
+    });
+    if (!res.ok) throw new Error('图片上传失败 ' + res.status);
+    return URL_BASE + '/storage/v1/object/public/clothes/' + path;
+  }
+
+  // ---------- 渲染 ----------
+  const catIcon = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="width:40px;height:40px"><path d="M12 3l3 4M12 3L9 7M12 3v3M5 10h14M8 10v3a4 4 0 0 0 8 0v-3"/></svg>';
+
+  function renderCats() {
+    const el = $('#cats'); el.innerHTML = '';
+    ['全部', ...CATEGORIES].forEach(c => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (state.filter.category === c ? ' on' : '');
+      b.textContent = c;
+      b.onclick = () => { state.filter.category = c; renderCats(); load(); };
+      el.appendChild(b);
+    });
+  }
+
+  function renderTags() {
+    const el = $('#tags'); el.innerHTML = '';
+    // 性别
+    ['全部', ...GENDERS].forEach(g => {
+      const b = document.createElement('button');
+      b.className = 'tag' + (state.filter.gender === g ? ' on' : '');
+      b.textContent = g === '全部' ? '性别' : g;
+      b.onclick = () => { state.filter.gender = g; renderTags(); load(); };
+      el.appendChild(b);
+    });
+    // 季节
+    ['全部', ...SEASONS].forEach(s => {
+      const b = document.createElement('button');
+      b.className = 'tag' + (state.filter.season === s ? ' on' : '');
+      b.textContent = s === '全部' ? '季节' : s;
+      b.onclick = () => { state.filter.season = s; renderTags(); load(); };
+      el.appendChild(b);
+    });
+  }
+
+  const SORT_OPTS = [
+    { key: 'price', dir: 'desc', label: '金额↓' },
+    { key: 'price', dir: 'asc', label: '金额↑' },
+    { key: 'purchased_at', dir: 'desc', label: '购入新→旧' },
+    { key: 'purchased_at', dir: 'asc', label: '购入旧→新' },
+    { key: 'created_at', dir: 'desc', label: '录入时间' }
+  ];
+  let sortIdx = 0;
+  function cycleSort() {
+    sortIdx = (sortIdx + 1) % SORT_OPTS.length;
+    state.sort = SORT_OPTS[sortIdx];
+    $('#sort-label').textContent = SORT_OPTS[sortIdx].label;
+    load();
+  }
+
+  function renderGrid() {
+    const el = $('#grid');
+    const list = state.clothes;
+    const total = list.reduce((s, c) => s + (Number(c.price) || 0), 0);
+    $('#stat-count').textContent = list.length;
+    $('#stat-total').textContent = fmtMoney(total);
+    $('#stat-avg').textContent = list.length ? fmtMoney(total / list.length) : '¥0';
+
+    if (!list.length) {
+      el.innerHTML = '<div class="empty">' + catIcon + '<div class="t">衣橱空空的</div><div class="s">点右下角 + 添加第一件衣服</div></div>';
+      return;
+    }
+    el.innerHTML = list.map(c => {
+      const color = c.color || '';
+      const swatch = color ? '<span class="cdot" style="background:' + esc(color) + (color.toLowerCase() === '#f8fafc' ? ';border-color:#cbd5e1' : '') + '"></span>' : '';
+      const img = c.image_url ? '<img src="' + esc(c.image_url) + '" loading="lazy" alt="">' : catIcon.replace('style="width:40px;height:40px"', 'style="width:40px;height:40px" class="ph"');
+      const price = Number(c.price) || 0;
+      return '<div class="card" data-id="' + esc(c.id) + '">' +
+        '<div class="thumb">' + img +
+          '<span class="cat-badge">' + esc(c.category) + '</span>' +
+          '<span class="del" title="删除"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></span>' +
+        '</div>' +
+        '<div class="body">' +
+          '<div class="name">' + esc(c.name) + '</div>' +
+          '<div class="meta">' + swatch + '<span>' + esc(c.gender) + '</span>' + (c.seasons && c.seasons.length ? '<span>· ' + esc(c.seasons.join('/')) + '</span>' : '') + '</div>' +
+          '<div class="foot">' +
+            '<span class="price">' + fmtMoney(price) + '</span>' +
+            '<span class="age">' + esc(timeSince(c.purchased_at)) + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // 绑定事件
+    el.querySelectorAll('.card').forEach(card => {
+      const id = card.dataset.id;
+      const item = list.find(x => x.id === id);
+      card.onclick = (e) => {
+        if (e.target.closest('.del')) { askDelete(id); return; }
+        openEdit(item);
+      };
+    });
+  }
+
+  async function load() {
+    try {
+      await fetchClothes();
+      renderGrid();
+    } catch (e) {
+      console.error(e);
+      toast(e.message || '加载失败');
+      if (e.message === 'config missing') return;
+      $('#grid').innerHTML = '<div class="empty">' + catIcon + '<div class="t">加载失败</div><div class="s">请检查 config.js 配置与网络</div></div>';
+    }
+  }
+
+  // ---------- 表单 ----------
+  function openSheet() {
+    $('#sheet').classList.add('show');
+    $('#mask').classList.add('show');
+  }
+  function closeSheet() {
+    $('#sheet').classList.remove('show');
+    $('#mask').classList.remove('show');
+    state.editingId = null; state.pendingImage = null;
+  }
+
+  function buildSeg(elId, items, getCurrent, setCurrent) {
+    const el = document.getElementById(elId); el.innerHTML = '';
+    items.forEach(it => {
+      const b = document.createElement('button');
+      b.className = 'opt' + (getCurrent() === it ? ' on' : '');
+      b.textContent = it;
+      b.onclick = () => { setCurrent(it); buildSeg(elId, items, getCurrent, setCurrent); };
+      el.appendChild(b);
+    });
+  }
+
+  let formColor = '';
+  let formSeasons = [];
+  let formCat = CATEGORIES[0];
+  let formGender = '中性';
+
+  function renderColorPicker() {
+    const el = $('#f-color'); el.innerHTML = '';
+    COLORS.forEach(c => {
+      const b = document.createElement('button');
+      b.className = 'swatch' + (formColor === c ? ' on checked' : '');
+      b.style.background = c;
+      b.onclick = () => { formColor = c; renderColorPicker(); };
+      el.appendChild(b);
+    });
+  }
+
+  function openAdd() {
+    state.editingId = null; state.pendingImage = null;
+    $('#sheet-title').textContent = '添加衣服';
+    $('#f-name').value = ''; $('#f-price').value = ''; $('#f-date').value = ''; $('#f-note').value = '';
+    formColor = ''; formSeasons = []; formCat = CATEGORIES[0]; formGender = '中性';
+    setPreview(null);
+    buildSeg('f-cat', CATEGORIES, () => formCat, v => { formCat = v; });
+    buildSeasons(); buildGender(); renderColorPicker();
+    openSheet();
+  }
+
+  function buildSeasons() {
+    const el = $('#f-seasons'); el.innerHTML = '';
+    SEASONS.forEach(s => {
+      const b = document.createElement('button');
+      b.className = 'opt' + (formSeasons.includes(s) ? ' on' : '');
+      b.textContent = s;
+      b.onclick = () => { const i = formSeasons.indexOf(s); i >= 0 ? formSeasons.splice(i, 1) : formSeasons.push(s); buildSeasons(); };
+      el.appendChild(b);
+    });
+  }
+  function buildGender() {
+    const el = $('#f-gender'); el.innerHTML = '';
+    GENDERS.forEach(g => {
+      const b = document.createElement('button');
+      b.className = 'opt' + (formGender === g ? ' on' : '');
+      b.textContent = g;
+      b.onclick = () => { formGender = g; buildGender(); };
+      el.appendChild(b);
+    });
+  }
+
+  function openEdit(item) {
+    state.editingId = item.id; state.pendingImage = null;
+    $('#sheet-title').textContent = '编辑衣服';
+    $('#f-name').value = item.name || '';
+    $('#f-price').value = item.price != null ? item.price : '';
+    $('#f-date').value = item.purchased_at || '';
+    $('#f-note').value = item.note || '';
+    formCat = item.category || CATEGORIES[0];
+    formColor = item.color || '';
+    formSeasons = Array.isArray(item.seasons) ? item.seasons : [];
+    formGender = item.gender || '中性';
+    setPreview(item.image_url || null);
+    buildSeg('f-cat', CATEGORIES, () => formCat, v => { formCat = v; });
+    buildSeasons(); buildGender(); renderColorPicker();
+    openSheet();
+  }
+
+  function setPreview(src) {
+    const box = $('#upload-box');
+    const oldImg = box.querySelector('img');
+    if (oldImg) oldImg.remove();
+    const oldRm = box.querySelector('.rm');
+    if (oldRm) oldRm.remove();
+    if (src) {
+      const img = document.createElement('img'); img.src = src; box.appendChild(img);
+      const rm = document.createElement('span'); rm.className = 'rm'; rm.textContent = '×';
+      rm.onclick = (e) => { e.stopPropagation(); setPreview(null); };
+      box.appendChild(rm);
+    }
+  }
+
+  // ---------- 事件绑定 ----------
+  $('#fab').onclick = openAdd;
+  $('#mask').onclick = closeSheet;
+  $('#btn-cancel').onclick = closeSheet;
+  $('#btn-sort').onclick = cycleSort;
+  $('#upload-box').onclick = () => $('#file-input').click();
+  $('#file-input').onchange = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      toast('图片处理中…');
+      const blob = await compressImage(file);
+      state.pendingImage = blob;
+      setPreview(URL.createObjectURL(blob));
+      toast('图片已就绪，保存时上传');
+    } catch (err) { toast(err.message); }
+  };
+
+  $('#btn-save').onclick = async () => {
+    const name = $('#f-name').value.trim();
+    if (!name) { toast('请填写名称'); return; }
+    const btn = $('#btn-save');
+    btn.disabled = true; btn.textContent = '保存中…';
+    try {
+      let imageUrl = state.pendingImage ? await uploadImage(state.pendingImage) : null;
+      // 编辑且未换图时保留原图
+      if (!imageUrl && state.editingId) {
+        const cur = state.clothes.find(x => x.id === state.editingId);
+        imageUrl = cur ? cur.image_url : null;
+      }
+      const payload = {
+        name: name,
+        category: formCat,
+        color: formColor || null,
+        seasons: formSeasons,
+        gender: formGender,
+        price: Number($('#f-price').value) || 0,
+        purchased_at: $('#f-date').value || null,
+        image_url: imageUrl,
+        note: $('#f-note').value.trim() || null
+      };
+      await saveCloth(payload);
+      closeSheet();
+      toast('已保存');
+      await load();
+    } catch (err) {
+      console.error(err);
+      toast(err.message || '保存失败');
+    } finally {
+      btn.disabled = false; btn.textContent = '保存';
+    }
+  };
+
+  let delTarget = null;
+  function askDelete(id) {
+    delTarget = id;
+    $('#dialog-text').textContent = '确定删除这件衣服？';
+    $('#dialog').classList.add('show');
+  }
+  $('#dialog-no').onclick = () => { $('#dialog').classList.remove('show'); delTarget = null; };
+  $('#dialog-yes').onclick = async () => {
+    $('#dialog').classList.remove('show');
+    if (!delTarget) return;
+    try { await removeCloth(delTarget); delTarget = null; toast('已删除'); await load(); }
+    catch (e) { toast(e.message); }
+  };
+
+  // ---------- 初始化 ----------
+  renderCats();
+  renderTags();
+  $('#sort-label').textContent = SORT_OPTS[0].label;
+  load();
+})();
+</script>
+</body>
+</html>
