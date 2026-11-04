@@ -86,7 +86,7 @@
   }
   .stat .s-icon svg { width: 17px; height: 17px; }
   .s-icon.i-count svg { stroke: #c97b5a; }
-  .s-icon.i-total svg { stroke: #6b8f5e; }
+  .s-icon.i-total svg { stroke: #b8985e; }
   .s-icon.i-avg svg { stroke: #b06a75; }
   .stat .s-txt { display: flex; flex-direction: column; min-width: 0; }
   .stat .num { font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.15; letter-spacing: -.3px; }
@@ -96,8 +96,8 @@
   .cats {
     display: flex; gap: 8px; overflow-x: auto; padding: 14px 16px 4px;
     scrollbar-width: none;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 26px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 26px), transparent 100%);
   }
   .cats::-webkit-scrollbar { display: none; }
   .chip {
@@ -114,7 +114,10 @@
 
   /* ================= 工具栏 ================= */
   .toolbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px 6px; gap: 12px; }
-  .toolbar .tags { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; }
+  .toolbar .tags { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 8px, #000 calc(100% - 18px), transparent 100%);
+  }
   .toolbar .tags::-webkit-scrollbar { display: none; }
   .tag {
     flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
@@ -130,7 +133,7 @@
     flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
     padding: 7px 13px; border-radius: 999px; background: rgba(255,253,249,.9);
     border: 1px solid var(--border); font-size: 13px; color: var(--text); font-weight: 600;
-    box-shadow: 0 2px 8px rgba(93,64,45,.05);
+    box-shadow: 0 2px 8px rgba(93,64,45,.05); gap: 6px;
   }
   .btn-sort:active { transform: scale(.95); }
   .btn-sort svg { width: 14px; height: 14px; stroke: var(--primary); }
@@ -247,7 +250,7 @@
     border-top: 1px solid rgba(238,227,214,.9); padding-bottom: var(--safe-bottom);
     display: flex; align-items: center; justify-content: center; gap: 8px; height: 60px;
   }
-  .tabbar .hint { font-size: 12.5px; color: #8a7566; letter-spacing: .5px; }
+  .tabbar .hint { font-size: 12.5px; color: #6f5a4b; letter-spacing: .5px; }
 
   /* ================= 弹窗 ================= */
   .mask {
@@ -765,14 +768,14 @@
     ['全部', ...GENDERS].forEach(g => {
       const b = document.createElement('button');
       b.className = 'tag' + (state.filter.gender === g ? ' on' : '');
-      b.textContent = g === '全部' ? '性别' : g;
+      b.textContent = g === '全部' ? '性别不限' : g;
       b.onclick = () => { state.filter.gender = g; renderTags(); load(); };
       el.appendChild(b);
     });
     ['全部', ...SEASONS].forEach(s => {
       const b = document.createElement('button');
       b.className = 'tag' + (state.filter.season === s ? ' on' : '');
-      b.textContent = s === '全部' ? '季节' : s;
+      b.textContent = s === '全部' ? '季节不限' : s;
       b.onclick = () => { state.filter.season = s; renderTags(); load(); };
       el.appendChild(b);
     });
