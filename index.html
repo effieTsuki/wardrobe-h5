@@ -284,7 +284,7 @@
   .sheet .form { padding: 8px 22px 0; }
   .field { margin-bottom: 15px; }
   .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 7px; font-weight: 600; }
-  .field input[type=text], .field input[type=number], .field textarea {
+  .field input[type=text], .field input[type=number], .field input[type=password], .field textarea {
     width: 100%; padding: 12px 14px; min-height: 46px; border-radius: 13px; border: 1.5px solid transparent;
     background: var(--warm-gray); outline: none; transition: border .15s ease, box-shadow .15s ease;
   }
@@ -466,6 +466,44 @@
     box-shadow: 0 4px 14px rgba(234,161,51,.3);
   }
 
+  /* 顶栏登录按钮 */
+  .login-btn {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: rgba(255,252,245,.9); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(150,110,30,.06);
+    transition: all .15s ease;
+  }
+  .login-btn:active { transform: scale(.92); }
+  .login-btn svg { width: 19px; height: 19px; stroke: var(--muted); }
+  .login-btn.on { background: var(--grad); border-color: transparent; box-shadow: 0 5px 14px rgba(234,161,51,.35); }
+  .login-btn.on svg { stroke: #fff; }
+
+  /* 登录弹层 */
+  .link-btn { display: block; width: 100%; margin-top: 14px; font-size: 13px; color: var(--primary-deep); font-weight: 600; padding: 8px; text-decoration: underline; text-underline-offset: 3px; }
+  .sync-tip { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; line-height: 1.65; }
+  .sync-warn { font-size: 12.5px; color: #b5771c; margin: 6px 0 0; line-height: 1.65; font-weight: 600; }
+  .sync-badge {
+    display: flex; align-items: center; gap: 8px; padding: 13px 15px; border-radius: 13px;
+    background: #f0f5e8; color: #5e7d4a; font-size: 14px; font-weight: 700; margin-bottom: 10px;
+  }
+  .login-sheet .btn.primary, .login-sheet .btn.ghost { width: 100%; margin-top: 8px; padding: 13px; font-size: 14.5px; border-radius: 13px; }
+  .login-sheet h2 { position: relative; padding-right: 44px; }
+  .sheet-close {
+    position: absolute; right: 16px; top: 12px; width: 32px; height: 32px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--warm-gray); color: var(--muted); font-size: 15px; z-index: 2;
+  }
+  .pass-wrap { position: relative; }
+  .pass-wrap input { padding-right: 44px; }
+  .eye-btn {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); border-radius: 8px;
+  }
+  .eye-btn:active { transform: translateY(-50%) scale(.88); }
+  .eye-btn svg { width: 18px; height: 18px; stroke: currentColor; }
+
   /* toast */
   .toast {
     position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 60;
@@ -498,6 +536,10 @@
           <div class="sub">轻松整理 · 井井有条</div>
         </div>
       </div>
+      <button class="login-btn" id="login-btn" aria-label="数据同步">
+        <svg id="lb-out" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <svg id="lb-in" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M20 6L9 17l-5-5"/></svg>
+      </button>
     </div>
     <div class="stats">
       <div class="stat">
@@ -647,6 +689,53 @@
   </div>
 </div>
 
+<!-- 数据同步登录弹层 -->
+<div class="mask" id="login-mask"></div>
+  <div class="sheet login-sheet" id="login-sheet">
+    <div class="grip"></div>
+    <button class="sheet-close" id="login-close" aria-label="关闭">✕</button>
+    <h2>数据同步</h2>
+    <div class="form">
+    <div id="view-setup">
+      <div class="field">
+        <label>设置同步口令</label>
+        <div class="pass-wrap">
+          <input type="password" id="pass-1" placeholder="至少 6 位，请牢记" autocomplete="new-password">
+          <button class="eye-btn" data-for="pass-1"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+      </div>
+      <div class="field">
+        <label>确认口令</label>
+        <div class="pass-wrap">
+          <input type="password" id="pass-2" placeholder="再输入一次" autocomplete="new-password">
+          <button class="eye-btn" data-for="pass-2"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+      </div>
+      <p class="sync-warn">⚠️ 口令加密后作为数据归属凭证，无法反推原文，忘记将无法找回，请务必牢记</p>
+      <button class="btn primary" id="btn-set-pass" data-txt="设置口令并同步">设置口令并同步</button>
+      <button class="link-btn" id="link-to-login">已有口令？直接登录</button>
+    </div>
+    <div id="view-login" style="display:none">
+      <div class="field">
+        <label>输入同步口令</label>
+        <div class="pass-wrap">
+          <input type="password" id="pass-old" placeholder="你的同步口令" autocomplete="current-password">
+          <button class="eye-btn" data-for="pass-old"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+      </div>
+      <p class="sync-tip">换手机、换浏览器或清除缓存后，输入相同口令即可恢复全部衣橱数据</p>
+      <button class="btn primary" id="btn-login" data-txt="登录并同步">登录并同步</button>
+      <button class="link-btn" id="link-to-setup">返回设置口令</button>
+    </div>
+    <div id="view-done" style="display:none">
+      <div class="sync-badge">✓ 已开启口令同步，本设备数据已同步</div>
+      <p class="sync-tip">换手机或清除缓存后，在本页输入相同口令即可恢复全部衣橱数据</p>
+      <button class="btn ghost" id="btn-change-pass">修改口令</button>
+      <button class="btn ghost" id="btn-logout">退出登录（回到游客模式）</button>
+    </div>
+    </div>
+  </div>
+
 <!-- 删除确认 -->
 <div class="dialog" id="dialog">
   <p id="dialog-text">确定删除这件衣服？</p>
@@ -680,7 +769,8 @@
   const SEASON_COLORS = { '春':'#7eb582','夏':'#c9871a','秋':'#e0865f','冬':'#92aecb' };
 
   // ---------- 状态 ----------
-  let owner = localStorage.getItem('wardrobe_owner');
+  const PASS_KEY = 'wardrobe_pass_hash';
+  let owner = localStorage.getItem(PASS_KEY) || localStorage.getItem('wardrobe_owner');
   if (!owner) { owner = (crypto.randomUUID ? crypto.randomUUID() : ('u-' + Date.now() + Math.random().toString(16).slice(2))); localStorage.setItem('wardrobe_owner', owner); }
 
   const state = {
@@ -1151,6 +1241,105 @@
   $('#pf-clear').onclick = () => { tempPlatform = ''; formPlatform = ''; renderPfField(); closePf(); };
   $('#pf-ok').onclick = () => { formPlatform = tempPlatform; renderPfField(); closePf(); };
 
+  // ---------- 数据同步（口令登录） ----------
+  function isLogged() { return !!localStorage.getItem(PASS_KEY); }
+  function renderLoginBtn() {
+    const on = isLogged();
+    $('#login-btn').classList.toggle('on', on);
+    $('#lb-out').style.display = on ? 'none' : '';
+    $('#lb-in').style.display = on ? '' : 'none';
+  }
+  async function hashPass(pass) {
+    const data = new TextEncoder().encode('wardrobe-h5-salt-v1::' + pass);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+  }
+  async function migrateOwner(to) {
+    if (owner === to) return 0;
+    const res = await fetch(URL_BASE + '/rest/v1/clothes?owner=eq.' + encodeURIComponent(owner) + '&select=id', { headers: authHeaders() });
+    if (!res.ok) throw new Error('查询失败 ' + res.status);
+    const rows = await res.json();
+    if (!rows.length) return 0;
+    const res2 = await fetch(URL_BASE + '/rest/v1/clothes?id=in.(' + rows.map(r => r.id).join(',') + ')', {
+      method: 'PATCH', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ owner: to })
+    });
+    if (!res2.ok) throw new Error('数据迁移失败 ' + res2.status);
+    return rows.length;
+  }
+  function showLoginView(v) {
+    ['view-setup', 'view-login', 'view-done'].forEach(id => { $('#' + id).style.display = 'none'; });
+    $('#' + v).style.display = '';
+  }
+  function openLoginSheet() {
+    $('#btn-set-pass').dataset.txt = '设置口令并同步';
+    $('#btn-set-pass').textContent = $('#btn-set-pass').dataset.txt;
+    showLoginView(isLogged() ? 'view-done' : 'view-setup');
+    $('#pass-1').value = ''; $('#pass-2').value = ''; $('#pass-old').value = '';
+    $('#login-sheet').classList.add('show');
+    $('#login-mask').classList.add('show');
+  }
+  function closeLoginSheet() {
+    $('#login-sheet').classList.remove('show');
+    $('#login-mask').classList.remove('show');
+  }
+  async function withBtn(btn, fn) {
+    btn.disabled = true; btn.textContent = '处理中…';
+    try { await fn(); }
+    catch (e) { toast(e.message || '操作失败'); }
+    finally { btn.disabled = false; btn.textContent = btn.dataset.txt; }
+  }
+
+  $('#login-btn').onclick = openLoginSheet;
+  $('#login-mask').onclick = closeLoginSheet;
+  $('#login-close').onclick = closeLoginSheet;
+  document.querySelectorAll('.eye-btn').forEach(b => {
+    b.onclick = () => {
+      const input = document.getElementById(b.dataset.for);
+      input.type = input.type === 'password' ? 'text' : 'password';
+      b.style.opacity = input.type === 'text' ? '1' : '';
+    };
+  });
+  $('#link-to-login').onclick = () => showLoginView('view-login');
+  $('#link-to-setup').onclick = () => showLoginView('view-setup');
+
+  $('#btn-set-pass').onclick = () => {
+    const p1 = $('#pass-1').value.trim(), p2 = $('#pass-2').value.trim();
+    if (p1.length < 6) { toast('口令至少 6 位'); return; }
+    if (p1 !== p2) { toast('两次输入不一致'); return; }
+    withBtn($('#btn-set-pass'), async () => {
+      const h = await hashPass(p1);
+      if (h === owner) { toast('口令与当前一致'); closeLoginSheet(); return; }
+      const n = await migrateOwner(h);
+      owner = h; localStorage.setItem(PASS_KEY, h);
+      renderLoginBtn(); closeLoginSheet(); load();
+      toast(n > 0 ? '口令已设置，已同步 ' + n + ' 件衣服' : '口令已设置');
+    });
+  };
+  $('#btn-login').onclick = () => {
+    const p = $('#pass-old').value.trim();
+    if (p.length < 6) { toast('请输入口令（至少 6 位）'); return; }
+    withBtn($('#btn-login'), async () => {
+      const h = await hashPass(p);
+      owner = h; localStorage.setItem(PASS_KEY, h);
+      renderLoginBtn(); closeLoginSheet();
+      await load();
+      toast(state.clothes.length > 0 ? '已恢复 ' + state.clothes.length + ' 件衣服' : '已同步；若非首次使用，请检查口令是否正确');
+    });
+  };
+  $('#btn-change-pass').onclick = () => {
+    $('#btn-set-pass').dataset.txt = '确认修改并迁移数据';
+    $('#btn-set-pass').textContent = $('#btn-set-pass').dataset.txt;
+    showLoginView('view-setup');
+  };
+  $('#btn-logout').onclick = () => {
+    localStorage.removeItem(PASS_KEY);
+    let o = localStorage.getItem('wardrobe_owner');
+    if (!o || o === owner) { o = (crypto.randomUUID ? crypto.randomUUID() : ('u-' + Date.now() + Math.random().toString(16).slice(2))); localStorage.setItem('wardrobe_owner', o); }
+    owner = o;
+    renderLoginBtn(); closeLoginSheet(); load();
+    toast('已退出登录，数据保留在口令名下');
+  };
+
   // ---------- 事件绑定 ----------
   $('#fab').onclick = openAdd;
   $('#mask').onclick = closeSheet;
@@ -1222,6 +1411,7 @@
   // ---------- 初始化 ----------
   renderCats();
   renderTags();
+  renderLoginBtn();
   $('#sort-label').textContent = SORT_OPTS[0].label;
   load();
 })();
