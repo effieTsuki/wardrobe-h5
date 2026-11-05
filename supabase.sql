@@ -48,6 +48,13 @@ values ('clothes', 'clothes', true)
 on conflict (id) do nothing;
 
 -- 3. 存储权限：允许匿名上传/更新/删除 clothes 桶内的对象
+-- 注意：SELECT 策略必不可少——本环境（Supabase PG）的 DELETE/UPDATE 要求
+-- 目标行同时对 SELECT 策略可见，缺它会导致删除静默匹配 0 行（403/空数组）
+drop policy if exists clothes_storage_public_select on storage.objects;
+create policy clothes_storage_public_select
+  on storage.objects for select to anon
+  using (bucket_id = 'clothes');
+
 drop policy if exists clothes_storage_public_insert on storage.objects;
 create policy clothes_storage_public_insert
   on storage.objects for insert to anon
