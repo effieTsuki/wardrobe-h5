@@ -488,6 +488,9 @@
     box-shadow: 0 4px 14px rgba(234,161,51,.3);
   }
 
+  /* 顶栏按钮组（导出 + 登录） */
+  .header-actions { display: flex; gap: 8px; }
+
   /* 顶栏登录按钮 */
   .login-btn {
     width: 38px; height: 38px; border-radius: 12px;
@@ -574,10 +577,15 @@
           <div class="sub">轻松整理 · 井井有条</div>
         </div>
       </div>
-      <button class="login-btn" id="login-btn" aria-label="数据同步">
-        <svg id="lb-out" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <svg id="lb-in" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M20 6L9 17l-5-5"/></svg>
-      </button>
+      <div class="header-actions">
+        <button class="login-btn" id="export-btn" aria-label="导出数据">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        </button>
+        <button class="login-btn" id="login-btn" aria-label="数据同步">
+          <svg id="lb-out" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <svg id="lb-in" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M20 6L9 17l-5-5"/></svg>
+        </button>
+      </div>
     </div>
     <div class="stats">
       <div class="stat">
@@ -786,6 +794,16 @@
   </div>
 </div>
 
+<!-- 导出格式弹层 -->
+<div class="dialog" id="export-dialog">
+  <p>导出全部衣橱数据</p>
+  <div class="row">
+    <button class="btn ghost" id="exp-cancel">取消</button>
+    <button class="btn primary" id="exp-json">JSON 备份</button>
+    <button class="btn primary" id="exp-csv">CSV 表格</button>
+  </div>
+</div>
+
 <!-- 图片查看器 -->
 <div class="imgv" id="imgv"><img id="imgv-img" alt=""></div>
 
@@ -871,11 +889,14 @@
   if (!owner) { owner = (crypto.randomUUID ? crypto.randomUUID() : ('u-' + Date.now() + Math.random().toString(16).slice(2))); localStorage.setItem('wardrobe_owner', owner); }
 
   const state = {
-    clothes: [],
+    all: [],        // 全量数据（云端拉取 / 本地缓存恢复）
+    clothes: [],   // 当前筛选+排序后的视图数据
+    hasCache: false, // 本地是否存有快照（网络失败时降级展示）
     filter: { category: '全部', gender: '全部', season: '全部' },
     sort: { key: 'price', dir: 'desc' },
     editingId: null,
-    pendingImage: null
+    pendingImage: null,
+    origImageUrl: null  // 编辑开始时的原图片地址（保存换新图后用于清理旧文件）
   };
 
   // ---------- 工具 ----------
@@ -932,15 +953,52 @@
 
   async function fetchClothes() {
     assertCfg();
-    let url = URL_BASE + '/rest/v1/clothes?owner=eq.' + encodeURIComponent(owner) + '&select=*';
-    if (state.filter.category !== '全部') url += '&category=eq.' + encodeURIComponent(state.filter.category);
-    if (state.filter.gender !== '全部') url += '&gender=eq.' + encodeURIComponent(state.filter.gender);
-    if (state.filter.season !== '全部') url += '&seasons=cs.%7B' + encodeURIComponent(state.filter.season) + '%7D';
-    const col = state.sort.key === 'created_at' ? 'created_at' : (state.sort.key === 'purchased_at' ? 'purchased_at' : 'price');
-    url += '&order=' + col + '.' + state.sort.dir + '.nullslast';
+    // 一次拉全量，筛选/排序全部本地做（数据量小：切筛选零网络请求，离线快照也能筛）
+    const url = URL_BASE + '/rest/v1/clothes?owner=eq.' + encodeURIComponent(owner) + '&select=*&order=created_at.desc';
     const res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) throw new Error('查询失败 ' + res.status);
-    state.clothes = await res.json();
+    state.all = await res.json();
+  }
+
+  // 本地视图：全量 → 筛选 → 排序（与旧版服务端查询结果等价）
+  function applyView() {
+    state.clothes = state.all.filter(matchesFilter);
+    sortLocal();
+    saveCache();   // 视图状态（筛选/排序）与数据变化都同步进缓存，下次打开恢复上次视图
+  }
+
+  // ---------- 本地快照缓存（秒开 + 离线兜底） ----------
+  function cacheKey() { return 'wardrobe_cache::' + owner; }
+  function saveCache() {
+    try {
+      localStorage.setItem(cacheKey(), JSON.stringify({ t: Date.now(), list: state.all, filter: state.filter, sort: state.sort, sortIdx: sortIdx }));
+      state.hasCache = true;
+    } catch (e) { /* 存储不可用（隐私模式/空间满）不影响主流程 */ }
+  }
+  function restoreCache() {
+    try {
+      const raw = localStorage.getItem(cacheKey());
+      if (!raw) return;
+      const c = JSON.parse(raw);
+      if (!c || !Array.isArray(c.list)) return;
+      state.all = c.list;
+      if (c.filter && c.filter.category && c.filter.gender && c.filter.season) state.filter = c.filter;
+      if (c.sort && ['price', 'created_at', 'purchased_at'].indexOf(c.sort.key) > -1 && ['asc', 'desc'].indexOf(c.sort.dir) > -1) state.sort = c.sort;
+      if (typeof c.sortIdx === 'number' && c.sortIdx >= 0 && c.sortIdx < SORT_OPTS.length) sortIdx = c.sortIdx;
+      state.hasCache = true;
+      renderCats(); renderTags();
+      $('#sort-label').textContent = SORT_OPTS[sortIdx].label;
+      applyView(); renderGrid();
+    } catch (e) { /* 缓存损坏则忽略，走正常网络加载 */ }
+  }
+
+  // 尽力清理 storage 里的图片文件（失败不阻断，仅控制台提示）
+  function cleanStorageImage(url) {
+    if (!url || url.indexOf('/storage/v1/object/public/clothes/') < 0) return;
+    const objPath = url.split('/storage/v1/object/public/clothes/')[1];
+    fetch(URL_BASE + '/storage/v1/object/clothes/' + objPath, { method: 'DELETE', headers: authHeaders() })
+      .then(r => { if (!r.ok) console.warn('图片清理未成功 ' + r.status); })
+      .catch(() => {});
   }
 
   async function saveCloth(data) {
@@ -979,7 +1037,7 @@
     });
   }
 
-  // 记录是否匹配当前筛选（新建/编辑后决定是否出现在当前视图）
+  // 记录是否匹配当前筛选（applyView 本地筛选视图时使用）
   function matchesFilter(c) {
     if (state.filter.category !== '全部' && c.category !== state.filter.category) return false;
     if (state.filter.gender !== '全部' && c.gender !== state.filter.gender) return false;
@@ -1027,6 +1085,8 @@
 
   // ---------- 渲染 ----------
   const catIcon = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="width:40px;height:40px"><path d="M12 3l3 4M12 3L9 7M12 3v3M5 10h14M8 10v3a4 4 0 0 0 8 0v-3"/></svg>';
+  // 占位图标（无图 / 图片加载失败时显示）
+  const phHtml = catIcon.replace('style="width:40px;height:40px"', 'style="width:40px;height:40px" class="ph"');
   const emptyArtSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="url(#eg)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaa133"/><stop offset="1" stop-color="#b5771c"/></linearGradient></defs><path d="M12 3l3 4M12 3L9 7M12 3v3M5 10h14M8 10v3a4 4 0 0 0 8 0v-3"/><path d="M12 13v3M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>';
 
   function renderCats() {
@@ -1035,7 +1095,7 @@
       const b = document.createElement('button');
       b.className = 'chip' + (state.filter.category === c ? ' on' : '');
       b.textContent = c;
-      b.onclick = () => { state.filter.category = c; renderCats(); load(); };
+      b.onclick = () => { state.filter.category = c; renderCats(); applyView(); renderGrid(); };
       el.appendChild(b);
     });
   }
@@ -1046,7 +1106,7 @@
       const b = document.createElement('button');
       b.className = 'tag' + (g === '全部' ? ' reset' : '') + (state.filter.gender === g ? ' on' : '');
       b.textContent = g === '全部' ? '性别不限' : g;
-      b.onclick = () => { state.filter.gender = g; renderTags(); load(); };
+      b.onclick = () => { state.filter.gender = g; renderTags(); applyView(); renderGrid(); };
       el.appendChild(b);
     });
     const br = document.createElement('span'); br.className = 'row-break'; el.appendChild(br);
@@ -1060,7 +1120,7 @@
         d.style.background = SEASON_COLORS[s];
         b.insertBefore(d, b.firstChild);
       }
-      b.onclick = () => { state.filter.season = s; renderTags(); load(); };
+      b.onclick = () => { state.filter.season = s; renderTags(); applyView(); renderGrid(); };
       el.appendChild(b);
     });
   }
@@ -1077,7 +1137,7 @@
     sortIdx = (sortIdx + 1) % SORT_OPTS.length;
     state.sort = SORT_OPTS[sortIdx];
     $('#sort-label').textContent = SORT_OPTS[sortIdx].label;
-    load();
+    applyView(); renderGrid();
   }
 
   function renderGrid() {
@@ -1101,7 +1161,7 @@
     el.innerHTML = list.map((c, i) => {
       const color = c.color || '';
       const swatch = color ? '<span class="cdot" style="background:' + esc(color) + (color.toLowerCase() === '#f8fafc' ? ';border-color:#cbd5e1' : '') + '"></span>' : '';
-      const img = c.image_url ? '<img src="' + esc(c.image_url) + '" loading="lazy" alt="">' : catIcon.replace('style="width:40px;height:40px"', 'style="width:40px;height:40px" class="ph"');
+      const img = c.image_url ? '<img src="' + esc(c.image_url) + '" loading="lazy" alt="">' : phHtml;
       const price = Number(c.price) || 0;
       const catColor = CATEGORY_COLORS[c.category] || '#b09a68';
       const seasonPills = (c.seasons || []).map(s => {
@@ -1124,6 +1184,14 @@
       '</div>';
     }).join('');
 
+    // 图片加载失败兜底：换成分类占位图标，避免整页裂图
+    el.querySelectorAll('.thumb img').forEach(im => {
+      im.addEventListener('error', () => {
+        const box = document.createElement('div');
+        box.innerHTML = phHtml;
+        im.replaceWith(box.firstChild);
+      });
+    });
     el.querySelectorAll('.card').forEach(card => {
       const id = card.dataset.id;
       const item = list.find(x => x.id === id);
@@ -1139,22 +1207,35 @@
     });
   }
 
+  let lastSync = 0;
   async function load() {
     try {
       await fetchClothes();
+      applyView();
       renderGrid();
+      lastSync = Date.now();
     } catch (e) {
       console.error(e);
       if (e.message === 'config missing') {
         toast('Supabase 配置缺失，请检查 config.js');
         return;
       }
-      // 网络/服务不可达：国内访问 Supabase（新加坡）可能不稳定，不再误导为配置问题，提供重试
-      toast('连接云端失败，请检查网络');
-      $('#grid').innerHTML = '<div class="empty"><div class="art">' + emptyArtSvg + '</div><div class="t">连接云端失败</div><div class="s">多为网络波动，稍后重试即可</div><button class="empty-btn" id="empty-retry">↻ 重新加载</button></div>';
-      $('#empty-retry').onclick = () => load();
+      // 网络/服务不可达：国内访问 Supabase（新加坡）可能不稳定
+      if (state.hasCache) {
+        // 本地有快照：继续展示快照（筛选/排序仍可用），仅提示
+        toast('连接云端失败，当前为本地快照');
+      } else {
+        toast('连接云端失败，请检查网络');
+        $('#grid').innerHTML = '<div class="empty"><div class="art">' + emptyArtSvg + '</div><div class="t">连接云端失败</div><div class="s">多为网络波动，稍后重试即可</div><button class="empty-btn" id="empty-retry">↻ 重新加载</button></div>';
+        $('#empty-retry').onclick = () => load();
+      }
     }
   }
+
+  // 回前台自动静默刷新（多设备间保持同步）；10 秒内不重复拉
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - lastSync > 10000) load();
+  });
 
   // ---------- 表单 ----------
   function openSheet() {
@@ -1253,7 +1334,7 @@
   }
 
   function openAdd() {
-    state.editingId = null; state.pendingImage = null;
+    state.editingId = null; state.pendingImage = null; state.origImageUrl = null;
     $('#sheet-title').textContent = '添加衣服';
     $('#f-name').value = ''; $('#f-price').value = ''; $('#f-note').value = '';
     formColor = ''; formSeasons = []; formCat = CATEGORIES[0]; formGender = '中性'; formDate = ''; formPlatform = ''; formSize = '';
@@ -1289,6 +1370,7 @@
 
   function openEdit(item) {
     state.editingId = item.id; state.pendingImage = null;
+    state.origImageUrl = item.image_url || null;   // 记录原图，保存换图后清理旧文件
     $('#sheet-title').textContent = '编辑衣服';
     $('#f-name').value = item.name || '';
     $('#f-price').value = item.price != null ? item.price : '';
@@ -1316,7 +1398,9 @@
     const oldRm = box.querySelector('.rm');
     if (oldRm) oldRm.remove();
     if (src) {
-      const img = document.createElement('img'); img.src = src; box.appendChild(img);
+      const img = document.createElement('img'); img.src = src;
+      img.onerror = () => { toast('图片加载失败，请检查网络'); img.remove(); };
+      box.appendChild(img);
       const rm = document.createElement('span'); rm.className = 'rm'; rm.textContent = '×';
       rm.onclick = (e) => { e.stopPropagation(); setPreview(null); };
       box.appendChild(rm);
@@ -1595,7 +1679,7 @@
       owner = h; localStorage.setItem(PASS_KEY, h);
       renderLoginBtn(); closeLoginSheet();
       await load();
-      toast(state.clothes.length > 0 ? '已恢复 ' + state.clothes.length + ' 件衣服' : '已同步；若非首次使用，请检查口令是否正确');
+      toast(state.all.length > 0 ? '已恢复 ' + state.all.length + ' 件衣服' : '已同步；若非首次使用，请检查口令是否正确');
     });
   };
   $('#btn-change-pass').onclick = () => {
@@ -1658,21 +1742,21 @@
         note: $('#f-note').value.trim() || null
       };
       btn.textContent = '保存中…';
+      const oldImgUrl = (state.editingId && state.pendingImage) ? state.origImageUrl : null;
       const saved = await saveCloth(payload);
-      // 乐观更新：直接用返回记录更新本地列表，不再全量重新拉取（省一次网络往返）
+      // 乐观更新：用返回记录更新本地全量，再统一筛选渲染（省一次网络往返）
       if (state.editingId) {
-        const i = state.clothes.findIndex(x => x.id === saved.id);
-        if (i > -1) {
-          if (matchesFilter(saved)) state.clothes[i] = saved;
-          else state.clothes.splice(i, 1);
-        }
-      } else if (matchesFilter(saved)) {
-        state.clothes.push(saved);
+        const i = state.all.findIndex(x => x.id === saved.id);
+        if (i > -1) state.all[i] = saved;
+      } else {
+        state.all.push(saved);
       }
-      sortLocal();
+      applyView();
       closeSheet();
       toast('已保存');
       renderGrid();
+      // 编辑换了新图：尽力清理 storage 里的旧文件，避免孤儿文件越积越多
+      if (oldImgUrl) cleanStorageImage(oldImgUrl);
     } catch (err) {
       console.error(err);
       toast(err.message || '保存失败');
@@ -1692,25 +1776,27 @@
     $('#dialog').classList.remove('show');
     if (!delTarget) return;
     const id = delTarget;
-    const item = state.clothes.find(x => x.id === id) || null;
+    const item = state.all.find(x => x.id === id) || null;
     try {
       await removeCloth(id);
       // 乐观更新：本地移除后立即渲染，不再全量重新拉取（省两次网络往返）
-      state.clothes = state.clothes.filter(x => x.id !== id);
+      state.all = state.all.filter(x => x.id !== id);
+      applyView();
       delTarget = null; toast('已删除'); renderGrid();
     } catch (e) { toast(e.message); return; }
-    // 尽力清理图床文件（图片地址取自本地数据），失败不阻断，仅控制台提示
-    if (item && item.image_url && item.image_url.indexOf('/storage/v1/object/public/clothes/') > -1) {
-      const objPath = item.image_url.split('/storage/v1/object/public/clothes/')[1];
-      fetch(URL_BASE + '/storage/v1/object/clothes/' + objPath, { method: 'DELETE', headers: authHeaders() })
-        .then(r => { if (!r.ok) console.warn('图片清理未成功 ' + r.status); })
-        .catch(() => {});
-    }
+    // 尽力清理图床文件（图片地址取自本地数据），失败不阻断
+    cleanStorageImage(item && item.image_url);
   };
 
   // ---------- 图片查看器（灯箱）：单击关闭，双击 2 倍放大 ----------
   let imgvTap = 0, imgvCloseTimer = null;
   const imgvEl = $('#imgv'), imgvImg = $('#imgv-img');
+  imgvImg.onerror = () => {
+    if (!imgvImg.getAttribute('src')) return;
+    imgvEl.classList.remove('show');
+    imgvImg.src = ''; imgvImg.classList.remove('zoom');
+    toast('图片加载失败，请检查网络');
+  };
   imgvEl.onclick = () => {
     const now = Date.now();
     if (now - imgvTap < 320) {
@@ -1726,12 +1812,52 @@
     }, 320);
   };
 
+  // ---------- 数据导出 ----------
+  function dateStamp() {
+    const d = new Date();
+    return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  }
+  function downloadFile(name, mime, content) {
+    const url = URL.createObjectURL(new Blob([content], { type: mime }));
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+  $('#export-btn').onclick = () => {
+    if (!state.all.length) { toast('暂无可导出的数据'); return; }
+    $('#export-dialog').classList.add('show');
+  };
+  $('#exp-cancel').onclick = () => $('#export-dialog').classList.remove('show');
+  $('#exp-json').onclick = () => {
+    $('#export-dialog').classList.remove('show');
+    downloadFile('wardrobe-backup-' + dateStamp() + '.json', 'application/json',
+      JSON.stringify({ app: 'wardrobe-h5', exported_at: new Date().toISOString(), count: state.all.length, items: state.all }, null, 2));
+    toast('已导出 JSON 备份');
+  };
+  $('#exp-csv').onclick = () => {
+    $('#export-dialog').classList.remove('show');
+    const cols = ['名称', '分类', '尺码', '颜色', '季节', '性别', '金额', '购入时间', '购入平台', '图片链接', '备注', '录入时间'];
+    const keys = ['name', 'category', 'size', 'color', 'seasons', 'gender', 'price', 'purchased_at', 'platform', 'image_url', 'note', 'created_at'];
+    const cell = (v) => {
+      if (v == null) return '';
+      let s = Array.isArray(v) ? v.join('、') : String(v);
+      if (/[",\r\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    };
+    let csv = '\uFEFF' + cols.join(',') + '\r\n';   // BOM 头，Excel 直接打开不乱码
+    state.all.forEach(r => { csv += keys.map(k => cell(r[k])).join(',') + '\r\n'; });
+    downloadFile('wardrobe-' + dateStamp() + '.csv', 'text/csv;charset=utf-8', csv);
+    toast('已导出 CSV');
+  };
+
   // ---------- 初始化 ----------
   renderCats();
   renderTags();
   renderLoginBtn();
   $('#sort-label').textContent = SORT_OPTS[0].label;
-  load();
+  restoreCache();   // 本地有快照则先秒显上次的视图（含筛选/排序状态）
+  load();           // 再拉云端，成功后覆盖渲染并更新快照
 })();
 </script>
 </body>
