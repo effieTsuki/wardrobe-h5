@@ -8,8 +8,9 @@ create table if not exists public.clothes (
   id           uuid primary key default gen_random_uuid(),
   owner        text not null default '',          -- 设备标识，用于数据隔离
   name         text not null,                     -- 名称
-  category     text not null default '其他',       -- 分类：上衣/下装/连衣裙/外套/鞋/配饰/其他
+  category     text not null default '其他',       -- 分类：上衣/毛衣/下装/半身裙/连衣裙/汉服/旗袍/外套/大衣/羽绒服/鞋/帽子/围巾/包包/其他（text 字段，无枚举约束，可自由扩展）
   color        text,                              -- 颜色（hex 色值）
+  size         text,                              -- 尺码：字母码 XS/S/M/L/XL/XXL/均码 或鞋码/腰码（text，可空）
   seasons      text[] not null default '{}',      -- 季节数组：春/夏/秋/冬
   gender       text not null default '中性',       -- 性别：男/女/中性
   price        numeric(12,2) not null default 0,  -- 金额（元）
@@ -25,8 +26,9 @@ create index if not exists clothes_owner_idx    on public.clothes (owner);
 create index if not exists clothes_category_idx on public.clothes (owner, category);
 create index if not exists clothes_price_idx    on public.clothes (owner, price);
 
--- 已建过表的用户升级用：追加购入平台列（可重复执行）
+-- 已建过表的用户升级用：追加购入平台、尺码列（可重复执行）
 alter table public.clothes add column if not exists platform text;
+alter table public.clothes add column if not exists size text;
 
 -- 给匿名角色授予读写权限（个人试用；前端用 owner 字段做逻辑隔离）
 grant select, insert, update, delete on public.clothes to anon;
